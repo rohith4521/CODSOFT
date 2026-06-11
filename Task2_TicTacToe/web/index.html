@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unbeatable Tic-Tac-Toe AI - CodSoft Internship</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Style -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="difficulty-unbeatable">
+    <div class="app-container">
+        <!-- Configuration & Scoreboard Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-area">
+                    <div class="logo-icon">
+                        <i data-lucide="gamepad-2"></i>
+                    </div>
+                    <div>
+                        <h2>CodSoft AI</h2>
+                        <span class="subtitle">Task 2: Tic-Tac-Toe</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scoreboard -->
+            <div class="sidebar-section">
+                <h3>Scoreboard</h3>
+                <div class="scoreboard">
+                    <div class="score-card score-human">
+                        <span class="score-label">Human (You)</span>
+                        <span id="score-human-val" class="score-number">0</span>
+                    </div>
+                    <div class="score-card score-ai">
+                        <span class="score-label">AI Agent</span>
+                        <span id="score-ai-val" class="score-number">0</span>
+                    </div>
+                    <div class="score-card score-draws">
+                        <span class="score-label">Draws</span>
+                        <span id="score-draw-val" class="score-number">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game Options Form -->
+            <div class="sidebar-section">
+                <h3>Settings</h3>
+                <div class="settings-panel">
+                    <div class="setting-group">
+                        <label>Difficulty</label>
+                        <div class="segmented-control" id="difficulty-control">
+                            <button class="segment" data-val="easy">Easy</button>
+                            <button class="segment" data-val="medium">Medium</button>
+                            <button class="segment active" data-val="unbeatable">Expert</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Your Symbol</label>
+                        <div class="segmented-control" id="symbol-control">
+                            <button class="segment active" data-val="X">X (First)</button>
+                            <button class="segment" data-val="O">O (Second)</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Starting Player</label>
+                        <div class="segmented-control" id="starter-control">
+                            <button class="segment active" data-val="human">Human</button>
+                            <button class="segment" data-val="ai">AI</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section footer-section">
+                <button id="reset-scores" class="action-btn-secondary">
+                    <i data-lucide="rotate-ccw"></i> Reset Stats
+                </button>
+                <div class="about-tag">
+                    <p>Designed for CodSoft AI Internship</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Game Area -->
+        <main class="game-container">
+            <header class="game-header">
+                <div class="status-panel">
+                    <h1 id="game-status-heading">Tic-Tac-Toe</h1>
+                    <p id="game-status-desc">Your turn. Click an empty square to make a move.</p>
+                </div>
+                <button id="restart-game" class="restart-btn">
+                    <i data-lucide="play"></i> Restart Game
+                </button>
+            </header>
+
+            <!-- Play Field -->
+            <section class="game-board-area">
+                <div class="grid-container" id="grid-container">
+                    <div class="grid-cell" data-index="0"></div>
+                    <div class="grid-cell" data-index="1"></div>
+                    <div class="grid-cell" data-index="2"></div>
+                    <div class="grid-cell" data-index="3"></div>
+                    <div class="grid-cell" data-index="4"></div>
+                    <div class="grid-cell" data-index="5"></div>
+                    <div class="grid-cell" data-index="6"></div>
+                    <div class="grid-cell" data-index="7"></div>
+                    <div class="grid-cell" data-index="8"></div>
+                    
+                    <!-- Winning line overlay (SVG) -->
+                    <svg class="winning-line-svg" id="winning-line-svg" viewBox="0 0 300 300">
+                        <line id="win-line" x1="0" y1="0" x2="0" y2="0" />
+                    </svg>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Toast/Notification -->
+    <div id="toast" class="toast">Action completed!</div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    <!-- Frontend game script -->
+    <script src="script.js"></script>
+</body>
+</html>
