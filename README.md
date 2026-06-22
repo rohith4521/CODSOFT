@@ -1,6 +1,6 @@
 # CodSoft Artificial Intelligence Internship Projects
 
-Welcome to my **CodSoft Artificial Intelligence Internship** repository! This project hosts a collection of practical AI implementations completed during the internship program. It contains two main tasks, both featuring robust Python backend engines and interactive, responsive web-based user interfaces.
+Welcome to my **CodSoft Artificial Intelligence Internship** repository! This repository hosts a collection of practical AI implementations completed during the internship program. It contains five tasks, all featuring robust Python backend engines and interactive, responsive web-based user interfaces.
 
 ---
 
@@ -10,92 +10,108 @@ The repository is organized into distinct directories for each task:
 
 ```bash
 CODSOFT/
-├── Task1_Chatbot/        # Task 1: Rule-Based Chatbot with Personalities
-│   ├── web/             # Frontend assets (HTML, CSS, JavaScript)
-│   ├── chatbot.py       # Core rule-based dialog manager engine
-│   ├── main.py          # Console interface & web launcher script
-│   ├── server.py        # Custom API & HTTP server backend
-│   └── test_chatbot.py  # Unit tests for conversation rules
+├── Task1_Chatbot/              # Task 1: Rule-Based Chatbot with Personalities
+│   ├── web/                    # Chatbot Web GUI (HTML, CSS, JS)
+│   ├── chatbot.py              # Rule-Based Dialog Manager Engine
+│   ├── main.py                 # Chatbot launcher (Console + Web)
+│   └── test_chatbot.py         # Chatbot unit tests
 │
-└── Task2_TicTacToe/      # Task 2: Unbeatable Tic-Tac-Toe AI Game
-    ├── web/             # Frontend assets (HTML, CSS, JavaScript)
-    ├── game.py          # Minimax algorithm with Alpha-Beta pruning
-    ├── main.py          # Console interface & web launcher script
-    ├── server.py        # Custom API & HTTP server backend
-    └── test_game.py     # Unit tests for Tic-Tac-Toe win check/moves
+├── Task2_TicTacToe/            # Task 2: Unbeatable Tic-Tac-Toe AI Game
+│   ├── web/                    # Game Web GUI (HTML, CSS, JS)
+│   ├── game.py                 # Minimax with Alpha-Beta Pruning Logic
+│   ├── main.py                 # Game launcher (Console + Web)
+│   └── test_game.py            # Game unit tests
+│
+├── Task3_ImageCaptioning/      # Task 3: Image Captioning AI Dashboard
+│   ├── web/                    # Dashboard Web GUI (HTML, CSS, JS)
+│   ├── caption_engine.py       # Simulated CNN Feature & LSTM Trace Engine
+│   ├── main.py                 # Captioner launcher (Console + Web)
+│   └── test_caption.py         # Captioner unit tests
+│
+├── Task4_RecommendationSystem/ # Task 4: Content & Collaborative Recommender
+│   ├── web/                    # Dashboard Web GUI (HTML, CSS, JS)
+│   ├── recommend.py            # TF-IDF, Cosine Similarity & Pearson CF Math
+│   ├── main.py                 # Recommender launcher (Console + Web)
+│   └── test_recommend.py       # Recommender unit tests
+│
+└── Task5_FaceDetection/        # Task 5: Face Detection & Recognition Profile Manager
+    ├── web/                    # Live Scanner Web GUI (HTML, CSS, JS)
+    ├── face_engine.py          # OpenCV Haar Cascades + Cosine Similarity matching
+    ├── main.py                 # FaceID launcher (Console + Web)
+    └── test_face.py            # FaceID unit tests
 ```
 
 ---
 
-## 🤖 Task 1: Rule-Based Chatbot with Personalities
+## 📖 Tasks Overview
 
-A multi-personality conversational assistant powered by regex-based pattern matching, stateful dialog flow management, and dynamic web interfaces.
-
-### Features
-*   **4 Distinct Personalities**:
-    *   **Nova**: A polite, professional, and efficient virtual assistant.
-    *   **Byte**: A geeky, code-loving, terminal-dwelling tech enthusiast.
-    *   **Spike**: A witty, playfully sarcastic, and humorous companion.
-    *   **Zen**: A calm, mindful, and peaceful guide focusing on inner balance.
-*   **Interactive Features**: Supports greetings, small talk, custom math calculations, randomized personality-specific jokes, simulated weather forecasting, time/date queries, and context awareness (remembers user's name and tracks mood).
-*   **Two Play Modes**: Full terminal terminal interface or beautiful web interface.
-*   **Clean CSS & UI**: Responsive, modern glassmorphic chat bubble layout with transition effects.
-
-### How to Run
-
-1. Navigate to the chatbot directory:
-   ```bash
-   cd Task1_Chatbot
-   ```
-2. **Run in Web Mode** (launches local server and automatically opens browser):
-   ```bash
-   python main.py
-   ```
-3. **Run in Console Mode** (play directly inside the terminal):
-   ```bash
-   python main.py --console
-   ```
+| Task | Project Name | AI & Algorithm Core | Key Web GUI Features |
+| :--- | :--- | :--- | :--- |
+| **Task 1** | **Multi-Personality Chatbot** | Stateful dialog manager & Regex parsing | Glassmorphism chat bubble interface, 4 voice modes |
+| **Task 2** | **Unbeatable Tic-Tac-Toe** | Minimax Algorithm + Alpha-Beta Pruning | Neon dark mode grid, real-time difficulty selectors |
+| **Task 3** | **Image Captioning AI** | Client-side Transformers.js (BLIP/ViT-GPT2) + CNN-LSTM simulator | Drag-and-drop file upload, CNN filter layer viewer, LSTM step trace |
+| **Task 4** | **Recommendation System** | TF-IDF Cosine Similarity & Pearson User Correlation from scratch | Dynamic rating sliders, TF-IDF weights overlap math table, peer similarity graph |
+| **Task 5** | **Face Detection & Recognition** | OpenCV Haar Cascades & Facial Grayscale Descriptor match | HTML5 webcam live capture, scan overlay sweep, crops grid, save name modal |
 
 ---
 
-## ❌ Task 2: Unbeatable Tic-Tac-Toe AI
+## 🛠️ Global Requirements & Setup
 
-A classic Tic-Tac-Toe game featuring an unbeatable AI opponent utilizing the **Minimax Algorithm with Alpha-Beta Pruning** to calculate the optimal move dynamically.
+This repository uses **Python 3** and minimal, lightweight dependencies. No heavy machine learning frameworks (like PyTorch or TensorFlow) are required locally!
 
-### Features
-*   **Three Difficulty Levels**:
-    *   **Easy**: Random selection of available moves.
-    *   **Medium**: 60% optimal moves using Minimax, 40% random play.
-    *   **Unbeatable**: Optimal mathematical move calculation via Minimax and Alpha-Beta pruning.
-*   **Smart First-Move Optimization**: Hardcoded optimal start options (center or corners) to dramatically lower lookup times on an empty board.
-*   **Modern Web GUI**: Sleek neon-themed design, smooth cell hover actions, responsive scaling, win/draw screen announcements, and real-time settings adjustments (difficulty, human symbol, starting player).
-
-### How to Run
-
-1. Navigate to the Tic-Tac-Toe directory:
-   ```bash
-   cd Task2_TicTacToe
-   ```
-2. **Run in Web Mode** (launches local server and automatically opens browser):
-   ```bash
-   python main.py
-   ```
-3. **Run in Console Mode** (play directly inside the terminal):
-   ```bash
-   python main.py --console
-   ```
+### Installation
+Install dependencies (OpenCV and NumPy) using `pip`:
+```powershell
+pip install -r requirements.txt
+```
 
 ---
 
-## 🧪 Testing
+## 📦 How to Run the Projects
 
-Both projects include custom testing suites to verify logic correctness:
-*   Run Chatbot tests: `python Task1_Chatbot/test_chatbot.py`
-*   Run Tic-Tac-Toe tests: `python Task2_TicTacToe/test_game.py`
+Each project supports two execution modes: **Web Mode** (which hosts a local server and automatically opens a browser GUI) and **Console Mode** (which runs directly in the terminal).
+
+### 🤖 Run Task 1: Chatbot
+```powershell
+cd Task1_Chatbot
+python main.py             # Web Mode (Default)
+python main.py --console   # Console Mode
+```
+
+### ❌ Run Task 2: Tic-Tac-Toe AI
+```powershell
+cd Task2_TicTacToe
+python main.py             # Web Mode (Default)
+python main.py --console   # Console Mode
+```
+
+### 👁️‍🗨️ Run Task 3: Image Captioning AI
+```powershell
+cd Task3_ImageCaptioning
+python main.py             # Web Mode (Default)
+python main.py --console   # Console Mode
+```
+
+### 🎯 Run Task 4: Recommendation System
+```powershell
+cd Task4_RecommendationSystem
+python main.py             # Web Mode (Default)
+python main.py --console   # Console Mode
+```
+
+### 👤 Run Task 5: Face Detection & Recognition
+```powershell
+cd Task5_FaceDetection
+python main.py             # Web Mode (Default)
+python main.py --console   # Console Mode
+```
 
 ---
 
-## 🛠️ Tech Stack & Requirements
-*   **Backend**: Python 3 (using standard libraries: `http.server`, `urllib`, `re`, `json`, `random`, `webbrowser`)
-*   **Frontend**: Vanilla HTML5, Vanilla CSS3 (modern responsive styling), and Vanilla JavaScript (ES6+ async fetch API integration)
-*   No external third-party dependencies required! Runs out-of-the-box on Windows, macOS, or Linux.
+## 🧪 Testing Suite
+You can validate the backend algorithms by running unit tests in their respective directories:
+*   **Task 1**: `python Task1_Chatbot/test_chatbot.py`
+*   **Task 2**: `python Task2_TicTacToe/test_game.py`
+*   **Task 3**: `python Task3_ImageCaptioning/test_caption.py`
+*   **Task 4**: `python Task4_RecommendationSystem/test_recommend.py`
+*   **Task 5**: `python Task5_FaceDetection/test_face.py`

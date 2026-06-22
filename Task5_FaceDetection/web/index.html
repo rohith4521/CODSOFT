@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face Detection & Recognition Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-bg-glow"></div>
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">👤</span>
+                <div class="logo-text">
+                    <h1>FaceID AI</h1>
+                    <p>CodSoft AI Internship — Task 5</p>
+                </div>
+            </div>
+            <div class="controls-nav">
+                <button class="btn btn-secondary active" id="btn-webcam-mode">🎥 Live Webcam</button>
+                <button class="btn btn-secondary" id="btn-upload-mode">📤 Image Upload</button>
+            </div>
+        </header>
+
+        <!-- Main Workspace Grid -->
+        <div class="dashboard-grid">
+            
+            <!-- Left Grid: Camera/Input Feed -->
+            <section class="panel feed-panel">
+                <div class="panel-header">
+                    <h2 id="feed-title">Live Video Input</h2>
+                    <span class="badge active" id="feed-badge">Webcam active</span>
+                </div>
+
+                <div class="feed-container">
+                    <!-- Webcam stream -->
+                    <video id="webcam-feed" autoplay playsinline style="display: block;"></video>
+                    
+                    <!-- File Drag & Drop (Hidden initially) -->
+                    <div class="upload-zone" id="upload-zone" style="display: none;">
+                        <input type="file" id="image-input" accept="image/*" class="file-input">
+                        <div class="upload-prompt">
+                            <span class="upload-icon">📷</span>
+                            <h3>Drag & Drop Image Here</h3>
+                            <p>Supports PNG, JPG, WEBP (Max 5MB)</p>
+                            <button class="btn btn-primary" style="margin-top: 10px;">Select File</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feed-controls">
+                    <button class="btn btn-primary" id="btn-trigger-scan" style="display: none;">Analyze Uploaded Image</button>
+                    <p class="feed-help" id="feed-help-text">Live scanner automatically processes frames every 500ms.</p>
+                </div>
+            </section>
+
+            <!-- Center Grid: Processed Scanner Output -->
+            <section class="panel scanner-panel">
+                <div class="panel-header">
+                    <h2>AI Bounding Overlay</h2>
+                    <span class="badge">Scanner Output</span>
+                </div>
+
+                <div class="scanner-container">
+                    <!-- This image receives the backend frame with drawn boxes -->
+                    <img id="processed-frame" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'><rect width='640' height='480' fill='%230b0e14'/><text x='50%25' y='50%25' font-family='sans-serif' font-size='18' fill='%23a0aec0' dominant-baseline='middle' text-anchor='middle'>Camera feed placeholder</text></svg>" alt="Processed Stream Overlay">
+                    <div class="scan-matrix-lines"></div>
+                </div>
+
+                <div class="scanner-analytics">
+                    <h3>Detected Faces:</h3>
+                    <div class="detected-faces-grid" id="detected-faces-list">
+                        <p class="placeholder-text">Scanning for faces...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Sidebar: Database of Profiles -->
+            <section class="panel profiles-panel">
+                <div class="panel-header">
+                    <h2>Registered Profiles</h2>
+                    <span class="badge active" id="profiles-count-badge">0 Profiles</span>
+                </div>
+                <div class="profiles-list-scroll" id="registered-profiles-list">
+                    <!-- Registered faces profiles list -->
+                    <div class="empty-state">
+                        <p>No faces registered yet. Register faces via scanner options!</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Registration Modal Popup -->
+    <div class="modal-backdrop" id="register-modal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Register Face Profile</h3>
+                <button class="btn-close-modal" id="btn-close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-crop-preview-box">
+                    <img id="modal-crop-img" src="#" alt="Face crop preview">
+                </div>
+                <div class="form-group">
+                    <label for="register-name-input">Identify Person Name:</label>
+                    <input type="text" id="register-name-input" class="form-control" placeholder="e.g. Jane Doe" maxlength="20">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-cancel-register">Cancel</button>
+                <button class="btn btn-primary" id="btn-submit-register">Save Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

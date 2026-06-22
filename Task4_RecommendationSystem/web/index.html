@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recommendation Engine Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-bg-glow"></div>
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">🎯</span>
+                <div class="logo-text">
+                    <h1>RecommendAI</h1>
+                    <p>CodSoft AI Internship — Task 4</p>
+                </div>
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab-btn active" id="btn-mode-content">Content-Based</button>
+                <button class="nav-tab-btn" id="btn-mode-collab">Collaborative</button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard View -->
+        <main class="dashboard-content">
+            
+            <!-- SECTION 1: CONTENT-BASED FILTERING -->
+            <div class="dashboard-section active" id="section-content">
+                <div class="grid-two-cols">
+                    
+                    <!-- Left Control Panel -->
+                    <div class="panel control-panel">
+                        <div class="panel-header">
+                            <h2>Select Query Item</h2>
+                            <span class="badge active">TF-IDF + Cosine</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="content-item-select">Choose a Movie or Book:</label>
+                            <select id="content-item-select" class="form-control">
+                                <option value="">Loading items...</option>
+                            </select>
+                        </div>
+
+                        <!-- Selected Item Preview Card -->
+                        <div class="preview-item-card" id="selected-item-card" style="display: none;">
+                            <div class="item-icon-tag" id="selected-item-icon">🎬</div>
+                            <div class="item-details">
+                                <h3 id="selected-item-title">Inception</h3>
+                                <span class="genre-tag" id="selected-item-genre">Sci-Fi Thriller</span>
+                                <p id="selected-item-desc">A thief steals corporate secrets through dream-sharing technology.</p>
+                            </div>
+                        </div>
+
+                        <div class="explanation-box">
+                            <h3>How Content-Based Similarity Works</h3>
+                            <p>This engine converts item genres and descriptions into numerical **TF-IDF vectors** from scratch. It then calculates the **Cosine Similarity** between vectors, representing how close the text representations are in high-dimensional semantic space.</p>
+                        </div>
+                    </div>
+
+                    <!-- Right Recommendations Panel -->
+                    <div class="panel results-panel">
+                        <div class="panel-header">
+                            <h2>Recommendations</h2>
+                            <span class="badge">Similarity Ranked</span>
+                        </div>
+
+                        <div class="recommendations-container" id="content-recs-container">
+                            <div class="empty-state">
+                                <span class="empty-icon">📂</span>
+                                <p>Select an item on the left to generate recommendations.</p>
+                            </div>
+                        </div>
+
+                        <!-- Cosine Math Panel -->
+                        <div class="math-panel" id="content-math-panel" style="display: none;">
+                            <div class="math-header">
+                                <h3>📐 Mathematical TF-IDF Vector Cosine Math</h3>
+                                <p>Checking overlap vectors for the top match:</p>
+                            </div>
+                            <div class="math-body">
+                                <table class="math-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Overlapping Word</th>
+                                            <th>Query Weight</th>
+                                            <th>Candidate Weight</th>
+                                            <th>Term Product</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="content-math-tbody">
+                                        <!-- Computed overlap rows -->
+                                    </tbody>
+                                </table>
+                                <div class="math-formula">
+                                    <p>$$\text{Cosine Similarity} = \sum (\text{Query}_i \times \text{Candidate}_i) = \text{Score}$$</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: COLLABORATIVE FILTERING -->
+            <div class="dashboard-section" id="section-collab">
+                <div class="grid-two-cols">
+                    
+                    <!-- Left User Control Panel -->
+                    <div class="panel control-panel">
+                        <div class="panel-header">
+                            <h2>Select User Profile</h2>
+                            <span class="badge active">Pearson Correlation</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="collab-user-select">Choose active User Profile:</label>
+                            <select id="collab-user-select" class="form-control">
+                                <option value="">Loading users...</option>
+                            </select>
+                        </div>
+
+                        <!-- User Rating list -->
+                        <div class="ratings-manager-box">
+                            <h3>Current Ratings (User-Item Matrix Row)</h3>
+                            <p class="helper-text">You can dynamically edit this user's ratings below to see the recommendations adjust in real time!</p>
+                            <div class="ratings-scroll-list" id="user-ratings-list">
+                                <!-- User rated items list -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Collaborative Recommendations Panel -->
+                    <div class="panel results-panel">
+                        <div class="panel-header">
+                            <h2>Collaborative Recommendations</h2>
+                            <span class="badge">Predicted Rating</span>
+                        </div>
+
+                        <div class="recommendations-container" id="collab-recs-container">
+                            <div class="empty-state">
+                                <span class="empty-icon">👥</span>
+                                <p>Select a user profile on the left to see collaborative recommendations.</p>
+                            </div>
+                        </div>
+
+                        <!-- Pearson Similarity Math Panel -->
+                        <div class="math-panel" id="collab-math-panel" style="display: none;">
+                            <div class="math-header">
+                                <h3>📊 Pearson Correlation Similarity Matrix</h3>
+                                <p>Calculated peer similarity coefficients (adjusted for mean rating bias):</p>
+                            </div>
+                            <div class="math-body">
+                                <div class="peer-similarities-grid" id="peer-similarities-grid">
+                                    <!-- User Pearson correlations will be drawn here -->
+                                </div>
+                                <div class="math-formula">
+                                    <p>$$\text{Predicted Rating} = \bar{R}_u + \frac{\sum (Sim(u, v) \times (R_{v,i} - \bar{R}_v))}{\sum |Sim(u, v)|}$$</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

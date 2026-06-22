@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Captioning AI Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-bg-glow"></div>
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">👁️‍🗨️</span>
+                <div class="logo-text">
+                    <h1>VisionCaption AI</h1>
+                    <p>CodSoft AI Internship — Task 3</p>
+                </div>
+            </div>
+            <div class="model-badge" id="model-status-badge">
+                <span class="status-dot offline" id="status-dot"></span>
+                <span id="status-text">Initializing Engine...</span>
+            </div>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Panel: Input & Model Control -->
+            <section class="panel upload-panel">
+                <div class="panel-header">
+                    <h2>Image Analysis</h2>
+                    <span class="badge">Input</span>
+                </div>
+                
+                <!-- Model Downloader Alert -->
+                <div class="model-loader-container" id="model-loader-container">
+                    <div class="loader-info">
+                        <span class="loader-title">Downloader</span>
+                        <span class="loader-progress" id="loader-progress-percent">0%</span>
+                    </div>
+                    <p class="loader-description">Downloading lightweight vision-language AI model (~98MB) directly to browser cache...</p>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="model-progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Drag & Drop Upload Zone -->
+                <div class="upload-zone" id="upload-zone">
+                    <input type="file" id="image-input" accept="image/*" class="file-input">
+                    <div class="upload-prompt" id="upload-prompt">
+                        <span class="upload-icon">📤</span>
+                        <h3>Drag & Drop Image Here</h3>
+                        <p>Supports PNG, JPEG, WEBP (Max 5MB)</p>
+                        <button class="btn btn-secondary" id="browse-btn">Browse Files</button>
+                    </div>
+                    <div class="preview-container" id="preview-container" style="display: none;">
+                        <img id="image-preview" src="#" alt="Upload Preview">
+                        <button class="btn-remove" id="remove-img-btn" title="Remove Image">&times;</button>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-primary btn-block" id="generate-caption-btn" disabled>
+                        <span>Generate AI Caption</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Results & Explanations -->
+            <section class="panel results-panel">
+                <div class="panel-header">
+                    <h2>AI Output & Explanations</h2>
+                    <span class="badge active">Analysis</span>
+                </div>
+
+                <!-- Result Caption Output -->
+                <div class="caption-output-box">
+                    <span class="output-label">Generated Caption</span>
+                    <div class="caption-text-container">
+                        <p id="caption-placeholder" class="placeholder-text">Upload an image and click generate to inspect results.</p>
+                        <h2 id="caption-output" class="caption-main" style="display: none;"></h2>
+                    </div>
+                </div>
+
+                <!-- Explanation Tab Headers -->
+                <div class="tabs-container">
+                    <button class="tab-btn active" id="tab-cnn">
+                        <span>CNN Feature Maps</span>
+                    </button>
+                    <button class="tab-btn" id="tab-lstm">
+                        <span>RNN/LSTM Tokenizer Trace</span>
+                    </button>
+                </div>
+
+                <!-- Tab Panels -->
+                <div class="tab-content">
+                    
+                    <!-- Tab 1: CNN Layer Maps -->
+                    <div class="tab-pane active" id="pane-cnn">
+                        <p class="pane-description">Visualizing simulated convolutional feature extraction filters (ResNet/VGG feed-forward pipeline):</p>
+                        <div class="cnn-maps-grid">
+                            
+                            <div class="map-card">
+                                <div class="map-img-container">
+                                    <img id="map-edges" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='224' height='224'><rect width='224' height='224' fill='%231a1a24'/></svg>" alt="Layer 1 Edges">
+                                </div>
+                                <div class="map-info">
+                                    <h4>Layer 1: Edges</h4>
+                                    <p>Extracts horizontal/vertical gradients and sharp transitions.</p>
+                                </div>
+                            </div>
+
+                            <div class="map-card">
+                                <div class="map-img-container">
+                                    <img id="map-textures" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='224' height='224'><rect width='224' height='224' fill='%231a1a24'/></svg>" alt="Layer 2 Textures">
+                                </div>
+                                <div class="map-info">
+                                    <h4>Layer 2: Textures</h4>
+                                    <p>Identifies repeating color structures and local patterns.</p>
+                                </div>
+                            </div>
+
+                            <div class="map-card">
+                                <div class="map-img-container">
+                                    <img id="map-parts" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='224' height='224'><rect width='224' height='224' fill='%231a1a24'/></svg>" alt="Layer 3 Structural Parts">
+                                </div>
+                                <div class="map-info">
+                                    <h4>Layer 3: Structural Parts</h4>
+                                    <p>Combines textures into object contours and shapes.</p>
+                                </div>
+                            </div>
+
+                            <div class="map-card">
+                                <div class="map-img-container">
+                                    <img id="map-heatmap" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='224' height='224'><rect width='224' height='224' fill='%231a1a24'/></svg>" alt="Layer 4 Attention Activation Heatmap">
+                                </div>
+                                <div class="map-info">
+                                    <h4>Layer 4: Attention Map</h4>
+                                    <p>Highlights regions receiving high vision-language weights.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: LSTM Token Trace -->
+                    <div class="tab-pane" id="pane-lstm">
+                        <p class="pane-description">Visualizing natural language generation. The RNN/LSTM generates one word at a time based on the image features and previous tokens:</p>
+                        <div class="lstm-trace-list" id="lstm-trace-list">
+                            <div class="trace-empty">
+                                <span class="empty-icon">🔠</span>
+                                <p>Generate a caption to inspect the word-by-word probability sequence.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Load Transformers.js CDN -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
