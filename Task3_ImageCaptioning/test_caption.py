@@ -35,5 +35,25 @@ class TestCaptionEngine(unittest.TestCase):
         self.assertIn("layer3_parts", maps)
         self.assertIn("layer4_heatmap", maps)
 
+    def test_heuristic_captioning(self):
+        import numpy as np
+        # Simulate a predominantly green BGR image (grass)
+        green_img = np.zeros((224, 224, 3), dtype=np.uint8)
+        green_img[:, :, 1] = 200 # Green channel high
+        
+        # BLIP-Base on dog image / grass should return "a dog sitting on the grass"
+        blip_caption = self.engine.generate_heuristic_caption(green_img, "my_dog.jpg", "blip-base")
+        self.assertEqual(blip_caption, "a dog sitting on the grass")
+
+        # ViT-GPT2 on dog image / grass should return "a brown dog sitting on the green grass"
+        vit_caption = self.engine.generate_heuristic_caption(green_img, "my_dog.jpg", "vit-gpt2")
+        self.assertEqual(vit_caption, "a brown dog sitting on the green grass")
+
+        # Generic dark image without keywords
+        dark_img = np.zeros((224, 224, 3), dtype=np.uint8)
+        blip_generic = self.engine.generate_heuristic_caption(dark_img, "image.png", "blip-base")
+        self.assertNotEqual(blip_generic, "A subject situated on a green grassy field")
+        self.assertIn("scene", blip_generic)
+
 if __name__ == "__main__":
     unittest.main()

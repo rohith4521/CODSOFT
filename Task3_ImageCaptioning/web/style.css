@@ -643,3 +643,130 @@ body {
     50% { transform: scale(1.1); opacity: 0.6; }
     100% { transform: scale(1); opacity: 1; }
 }
+
+/* Model Selection Styles */
+.model-selection-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 0.75rem;
+}
+
+.control-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+.select-control {
+    background: #0d111a;
+    border: 1px solid var(--panel-border);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.select-control:focus {
+    border-color: var(--accent-blue);
+}
+
+/* RNN Step Player Controls */
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-border);
+    padding: 0.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.25rem;
+}
+
+.btn-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
+.player-status {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-orange);
+    margin-left: auto;
+    padding-right: 0.5rem;
+}
+
+/* Active RNN Step Card Outline */
+.trace-step-card.active-step {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 15px rgba(var(--accent-blue-rgb), 0.15);
+    background: rgba(0, 114, 255, 0.05);
+}
+
+/* Architecture SVG Tab Styles */
+.arch-container {
+    background: var(--card-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.arch-svg {
+    max-width: 100%;
+}
+
+/* Resume Portfolio Helper Styles */
+.resume-helper-panel {
+    background: linear-gradient(135deg, rgba(20, 27, 45, 0.75) 0%, rgba(13, 17, 28, 0.85) 100%);
+    border: 1px solid rgba(0, 245, 212, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 245, 212, 0.05);
+}
+
+.resume-content-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.resume-text-area {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.resume-text-area > strong {
+    color: #00f5d4;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.resume-text-area strong {
+    color: #00f5d4;
+    font-weight: bold;
+}
+
+.resume-text-area ul {
+    margin-left: 1.25rem;
+}
+
+.resume-text-area li {
+    margin-bottom: 0.5rem;
+}

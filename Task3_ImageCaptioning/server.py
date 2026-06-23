@@ -60,11 +60,13 @@ class CaptionHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             try:
                 data = json.loads(post_data.decode('utf-8'))
                 image_data = data.get('image', '')
+                filename = data.get('filename', '')
+                model = data.get('model', 'vit-gpt2')
                 
                 if not image_data:
                     raise ValueError("No image data provided.")
 
-                feature_maps = engine.generate_feature_maps(image_data)
+                feature_maps = engine.generate_feature_maps(image_data, filename, model)
                 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')

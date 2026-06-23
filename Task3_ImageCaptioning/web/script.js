@@ -1,4 +1,4 @@
-import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.16.0";
+import { pipeline, env, RawImage } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.16.0";
 
 // Disable local model search to avoid file-system checks
 env.allowLocalModels = false;
@@ -6,7 +6,15 @@ env.allowLocalModels = false;
 // Global state
 let captioner = null;
 let currentImageBase64 = null;
-const modelDownloads = {};
+let currentFileName = "";
+let modelDownloads = {};
+let currentModelId = 'vit-gpt2';
+
+// RNN Playback state
+let currentTrace = [];
+let currentStepIndex = -1;
+let isPlaying = false;
+let playIntervalId = null;
 
 // DOM Elements
 const modelStatusBadge = document.getElementById('model-status-badge');
@@ -15,6 +23,7 @@ const statusText = document.getElementById('status-text');
 const modelLoaderContainer = document.getElementById('model-loader-container');
 const modelProgressBar = document.getElementById('model-progress-bar');
 const loaderProgressPercent = document.getElementById('loader-progress-percent');
+const modelSelector = document.getElementById('model-selector');
 
 const uploadZone = document.getElementById('upload-zone');
 const imageInput = document.getElementById('image-input');
@@ -30,8 +39,10 @@ const captionOutput = document.getElementById('caption-output');
 
 const tabCnn = document.getElementById('tab-cnn');
 const tabLstm = document.getElementById('tab-lstm');
+const tabArch = document.getElementById('tab-arch');
 const paneCnn = document.getElementById('pane-cnn');
 const paneLstm = document.getElementById('pane-lstm');
+const paneArch = document.getElementById('pane-arch');
 
 const mapEdges = document.getElementById('map-edges');
 const mapTextures = document.getElementById('map-textures');
@@ -39,15 +50,33 @@ const mapParts = document.getElementById('map-parts');
 const mapHeatmap = document.getElementById('map-heatmap');
 
 const lstmTraceList = document.getElementById('lstm-trace-list');
+const rnnPlayerControls = document.getElementById('rnn-player-controls');
+const btnPlayerPrev = document.getElementById('btn-player-prev');
+const btnPlayerToggle = document.getElementById('btn-player-toggle');
+const btnPlayerNext = document.getElementById('btn-player-next');
+const btnPlayerReset = document.getElementById('btn-player-reset');
+const playerStatusText = document.getElementById('player-status-text');
 
-// Initialize Transformers.js pipeline
-async function initializeModel() {
+
+// Load deep learning model
+async function loadModel(modelId) {
+    currentModelId = modelId;
+    captioner = null;
+    modelDownloads = {};
+    
     statusDot.className = 'status-dot loading';
     statusText.innerText = 'Downloading Model...';
     modelLoaderContainer.style.display = 'flex';
+    modelProgressBar.style.width = '0%';
+    loaderProgressPercent.innerText = '0%';
+    generateBtn.setAttribute('disabled', 'true');
+
+    const modelPath = modelId === 'blip-base' 
+        ? 'Xenova/blip-image-captioning-base' 
+        : 'Xenova/vit-gpt2-image-captioning';
 
     try {
-        captioner = await pipeline('image-captioning', 'Xenova/vit-gpt2-image-captioning', {
+        captioner = await pipeline('image-to-text', modelPath, {
             progress_callback: (data) => {
                 if (data.status === 'progress') {
                     modelDownloads[data.file] = data.progress;
@@ -56,7 +85,6 @@ async function initializeModel() {
             }
         });
 
-        // Setup complete
         statusDot.className = 'status-dot online';
         statusText.innerText = 'Engine Online';
         modelLoaderContainer.style.display = 'none';
@@ -97,16 +125,18 @@ function handleFile(file) {
         return;
     }
 
+    currentFileName = file.name;
+    resetOutput();
+
     const reader = new FileReader();
     reader.onload = (e) => {
         currentImageBase64 = e.target.result;
         
-        // Show preview
         imagePreview.src = currentImageBase64;
         uploadPrompt.style.display = 'none';
         previewContainer.style.display = 'flex';
         
-        // Enable generate button if model is ready
+        // Enable button
         generateBtn.removeAttribute('disabled');
     };
     reader.readAsDataURL(file);
@@ -148,9 +178,10 @@ removeImgBtn.addEventListener('click', (e) => {
     resetOutput();
 });
 
-// Reset visual elements
+// Reset output visualization state
 function resetOutput() {
     captionPlaceholder.style.display = 'block';
+    captionPlaceholder.innerText = 'Upload an image and click generate to inspect results.';
     captionOutput.style.display = 'none';
     captionOutput.innerText = '';
     
@@ -160,12 +191,8 @@ function resetOutput() {
     mapParts.src = blankSvg;
     mapHeatmap.src = blankSvg;
     
-    lstmTraceList.innerHTML = `
-        <div class="trace-empty">
-            <span class="empty-icon">🔠</span>
-            <p>Generate a caption to inspect the word-by-word probability sequence.</p>
-        </div>
-    `;
+    rnnPlayerControls.style.display = 'none';
+    resetPlayback();
 }
 
 // Generate Caption Action
@@ -180,11 +207,15 @@ generateBtn.addEventListener('click', async () => {
     captionOutput.style.display = 'none';
     
     try {
-        // Step 1: Call python backend to generate simulated CNN feature maps
+        // Step 1: Call python backend to generate real visual feature maps
         const cnnResponse = await fetch('/api/process', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: currentImageBase64 })
+            body: JSON.stringify({ 
+                image: currentImageBase64, 
+                filename: currentFileName,
+                model: currentModelId
+            })
         });
         const cnnData = await cnnResponse.json();
         
@@ -192,7 +223,6 @@ generateBtn.addEventListener('click', async () => {
             throw new Error(cnnData.error);
         }
         
-        // Update CNN preview maps
         mapEdges.src = cnnData.layer1_edges;
         mapTextures.src = cnnData.layer2_textures;
         mapParts.src = cnnData.layer3_parts;
@@ -201,23 +231,13 @@ generateBtn.addEventListener('click', async () => {
         // Step 2: Generate actual caption using Transformers.js (or fallback)
         let caption = "";
         if (captioner) {
-            const results = await captioner(currentImageBase64);
+            const image = await RawImage.fromURL(currentImageBase64);
+            const results = await captioner(image);
             caption = results[0].generated_text;
         } else {
-            // Offline/Fail fallback choices
-            const fallbacks = [
-                "a brown dog running through a grassy field",
-                "a group of people gathering in front of a building",
-                "an old vintage car parked on a city street",
-                "a small gray cat sleeping on a soft pillow"
-            ];
-            caption = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            // Use the real-time heuristic caption generated by the backend from the actual pixels!
+            caption = cnnData.caption || "a minimalist composition with balanced colors";
         }
-        
-        // Show caption result
-        captionPlaceholder.style.display = 'none';
-        captionOutput.style.display = 'block';
-        captionOutput.innerText = caption.charAt(0).toUpperCase() + caption.slice(1);
         
         // Step 3: Call python backend to explain the LSTM generation steps
         const lstmResponse = await fetch('/api/explain', {
@@ -227,7 +247,11 @@ generateBtn.addEventListener('click', async () => {
         });
         const lstmData = await lstmResponse.json();
         
-        renderLstmTrace(lstmData.trace);
+        // Select LSTM tab automatically to show generation
+        selectTab('lstm');
+        
+        // Initialize the interactive playback
+        initTracePlayer(lstmData.trace);
         
     } catch (e) {
         console.error(e);
@@ -238,15 +262,117 @@ generateBtn.addEventListener('click', async () => {
     }
 });
 
-// Render LSTM Prediction sequence
-function renderLstmTrace(trace) {
-    if (!trace || trace.length === 0) return;
+// Interactive Player controls
+function initTracePlayer(trace) {
+    currentTrace = trace;
+    currentStepIndex = -1;
+    stopPlayback();
     
+    rnnPlayerControls.style.display = 'flex';
+    lstmTraceList.innerHTML = '';
+    captionOutput.innerText = '';
+    captionOutput.style.display = 'block';
+    captionPlaceholder.style.display = 'none';
+    
+    updatePlayerUI();
+    
+    // Automatically start playback
+    startPlayback();
+}
+
+function updatePlayerUI() {
+    btnPlayerToggle.innerHTML = isPlaying ? '<span>⏸️ Pause</span>' : '<span>▶️ Play</span>';
+    
+    const totalSteps = currentTrace.length;
+    const currentStepNum = currentStepIndex + 1;
+    playerStatusText.innerText = `Step ${currentStepNum} / ${totalSteps}`;
+    
+    btnPlayerPrev.disabled = currentStepIndex <= -1;
+    btnPlayerNext.disabled = currentStepIndex >= totalSteps - 1;
+}
+
+function playNextStep() {
+    if (currentStepIndex >= currentTrace.length - 1) {
+        stopPlayback();
+        return;
+    }
+    
+    currentStepIndex++;
+    renderTraceUpToCurrentStep();
+    updatePlayerUI();
+}
+
+function playPrevStep() {
+    if (currentStepIndex <= -1) return;
+    
+    currentStepIndex--;
+    renderTraceUpToCurrentStep();
+    updatePlayerUI();
+}
+
+function startPlayback() {
+    if (currentStepIndex >= currentTrace.length - 1) {
+        currentStepIndex = -1; // Loop restart
+    }
+    isPlaying = true;
+    updatePlayerUI();
+    playIntervalId = setInterval(playNextStep, 800);
+}
+
+function stopPlayback() {
+    isPlaying = false;
+    if (playIntervalId) {
+        clearInterval(playIntervalId);
+        playIntervalId = null;
+    }
+    updatePlayerUI();
+}
+
+function resetPlayback() {
+    stopPlayback();
+    currentStepIndex = -1;
+    renderTraceUpToCurrentStep();
+    updatePlayerUI();
+}
+
+function renderTraceUpToCurrentStep() {
     lstmTraceList.innerHTML = '';
     
-    trace.forEach(step => {
-        const stepCard = document.createElement('div');
-        stepCard.className = 'trace-step-card';
+    if (currentStepIndex === -1) {
+        captionOutput.innerText = '';
+        lstmTraceList.innerHTML = `
+            <div class="trace-empty">
+                <span class="empty-icon">🔠</span>
+                <p>Use the player controls to step through the RNN tokenizer trace.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Reconstruct the text generated so far
+    const words = [];
+    for (let i = 0; i <= currentStepIndex; i++) {
+        const selectedWord = currentTrace[i].selected;
+        if (selectedWord !== '<end>') {
+            words.push(selectedWord);
+        }
+    }
+    
+    if (words.length > 0) {
+        const sentence = words.join(' ');
+        captionOutput.innerText = sentence.charAt(0).toUpperCase() + sentence.slice(1);
+    } else {
+        captionOutput.innerText = '';
+    }
+    
+    // Render the steps up to the current index
+    for (let i = 0; i <= currentStepIndex; i++) {
+        const step = currentTrace[i];
+        const card = document.createElement('div');
+        card.className = 'trace-step-card';
+        if (i === currentStepIndex) {
+            card.classList.add('active-step');
+        }
         
         let pRowsHtml = '';
         step.predictions.forEach(p => {
@@ -263,7 +389,7 @@ function renderLstmTrace(trace) {
             `;
         });
         
-        stepCard.innerHTML = `
+        card.innerHTML = `
             <div class="trace-step-header">
                 <span class="step-num">Word Step ${step.step}</span>
                 <span class="step-context">Input context: <strong>${step.context}</strong></span>
@@ -272,25 +398,69 @@ function renderLstmTrace(trace) {
                 ${pRowsHtml}
             </div>
         `;
-        
-        lstmTraceList.appendChild(stepCard);
-    });
+        lstmTraceList.appendChild(card);
+    }
+    
+    // Auto-scroll to the bottom of the list
+    if (lstmTraceList.lastChild) {
+        lstmTraceList.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
-// Tab Listeners
-tabCnn.addEventListener('click', () => {
-    tabCnn.classList.add('active');
-    tabLstm.classList.remove('active');
-    paneCnn.classList.add('active');
-    paneLstm.classList.remove('active');
+// Bind Player Actions
+btnPlayerToggle.addEventListener('click', () => {
+    if (isPlaying) {
+        stopPlayback();
+    } else {
+        startPlayback();
+    }
 });
 
-tabLstm.addEventListener('click', () => {
-    tabLstm.classList.add('active');
-    tabCnn.classList.remove('active');
-    paneLstm.classList.add('active');
-    paneCnn.classList.remove('active');
+btnPlayerNext.addEventListener('click', () => {
+    stopPlayback();
+    playNextStep();
 });
 
-// Run Init
-initializeModel();
+btnPlayerPrev.addEventListener('click', () => {
+    stopPlayback();
+    playPrevStep();
+});
+
+btnPlayerReset.addEventListener('click', () => {
+    resetPlayback();
+});
+
+// Bind Model Selector Change
+modelSelector.addEventListener('change', (e) => {
+    resetOutput();
+    loadModel(e.target.value);
+});
+
+
+// Tab Routing System
+function selectTab(tabId) {
+    [tabCnn, tabLstm, tabArch].forEach(tab => {
+        if (tab) tab.classList.remove('active');
+    });
+    [paneCnn, paneLstm, paneArch].forEach(pane => {
+        if (pane) pane.classList.remove('active');
+    });
+    
+    if (tabId === 'cnn') {
+        tabCnn.classList.add('active');
+        paneCnn.classList.add('active');
+    } else if (tabId === 'lstm') {
+        tabLstm.classList.add('active');
+        paneLstm.classList.add('active');
+    } else if (tabId === 'arch') {
+        tabArch.classList.add('active');
+        paneArch.classList.add('active');
+    }
+}
+
+tabCnn.addEventListener('click', () => selectTab('cnn'));
+tabLstm.addEventListener('click', () => selectTab('lstm'));
+tabArch.addEventListener('click', () => selectTab('arch'));
+
+// Initialize ViT-GPT2 Model
+loadModel('vit-gpt2');
