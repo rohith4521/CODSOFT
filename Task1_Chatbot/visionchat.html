@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VisionChat AI — Intelligent Conversational Agent</title>
-    <meta name="description" content="VisionChat AI is a premium conversational AI chatbot powered by Claude, featuring multiple personality agents, voice I/O, and a cognitive debug dashboard.">
+    <meta name="description" content="VisionChat AI is a premium conversational AI chatbot powered by Groq LLaMA, featuring multiple personality agents, voice I/O, and a cognitive debug dashboard.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-/* ═══════════════════════════════════════════════════════════════
-   DESIGN SYSTEM — CSS CUSTOM PROPERTIES
-   ═══════════════════════════════════════════════════════════════ */
 :root {
     --bg-deep: #06080d;
     --bg-surface: rgba(12, 17, 28, 0.85);
@@ -42,13 +39,10 @@
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 }
-
-/* Theme: Nova (Blue) — default */
 [data-theme="nova"] {
     --accent: #638dff; --accent-hover: #4f7aff;
     --accent-glow: rgba(99,141,255,0.3); --accent-soft: rgba(99,141,255,0.08);
 }
-/* Theme: Byte (Violet) */
 [data-theme="byte"] {
     --accent: #a78bfa; --accent-hover: #8b5cf6;
     --accent-glow: rgba(167,139,250,0.35); --accent-soft: rgba(167,139,250,0.08);
@@ -56,7 +50,6 @@
     --bg-elevated: rgba(22,16,40,0.9); --bg-card: rgba(28,20,52,0.6);
     --border-accent: rgba(167,139,250,0.25);
 }
-/* Theme: Spike (Amber) */
 [data-theme="spike"] {
     --accent: #fb923c; --accent-hover: #f97316;
     --accent-glow: rgba(251,146,60,0.35); --accent-soft: rgba(251,146,60,0.08);
@@ -64,7 +57,6 @@
     --bg-elevated: rgba(32,24,12,0.9); --bg-card: rgba(40,28,14,0.6);
     --border-accent: rgba(251,146,60,0.25);
 }
-/* Theme: Zen (Emerald) */
 [data-theme="zen"] {
     --accent: #34d399; --accent-hover: #10b981;
     --accent-glow: rgba(52,211,153,0.3); --accent-soft: rgba(52,211,153,0.08);
@@ -72,10 +64,6 @@
     --bg-elevated: rgba(16,32,26,0.9); --bg-card: rgba(20,40,32,0.6);
     --border-accent: rgba(52,211,153,0.25);
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   RESET & BASE
-   ═══════════════════════════════════════════════════════════════ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
 body {
@@ -87,19 +75,12 @@ body {
     overflow: hidden;
     transition: background var(--transition);
 }
-
-/* Ambient glow orbs */
 .ambient-orb {
     position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
-    filter: blur(120px); opacity: 0.15;
-    transition: all 1.2s ease;
+    filter: blur(120px); opacity: 0.15; transition: all 1.2s ease;
 }
 .orb-1 { width:600px;height:600px;top:-200px;left:-100px; background: var(--accent); }
 .orb-2 { width:500px;height:500px;bottom:-150px;right:-80px; background: var(--accent); opacity:0.1; }
-
-/* ═══════════════════════════════════════════════════════════════
-   APP SHELL — 3-Column Dashboard
-   ═══════════════════════════════════════════════════════════════ */
 .app-shell {
     position: relative; z-index: 1;
     width: 98vw; height: 96vh;
@@ -114,17 +95,11 @@ body {
     overflow: hidden;
     transition: grid-template-columns 0.4s var(--transition), background var(--transition);
 }
-.app-shell.debug-hidden {
-    grid-template-columns: 280px 1fr 0px;
-}
+.app-shell.debug-hidden { grid-template-columns: 280px 1fr 0px; }
 .app-shell.debug-hidden .debug-panel {
     width: 0; min-width: 0; overflow: hidden; opacity: 0;
     border-left-width: 0; pointer-events: none;
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   LEFT SIDEBAR
-   ═══════════════════════════════════════════════════════════════ */
 .sidebar {
     background: var(--bg-elevated);
     border-right: 1px solid var(--border-subtle);
@@ -134,8 +109,6 @@ body {
 }
 .sidebar::-webkit-scrollbar { width: 4px; }
 .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
-
-/* Logo */
 .logo-block { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
 .logo-mark {
     width: 40px; height: 40px; border-radius: var(--radius-sm);
@@ -147,14 +120,10 @@ body {
 }
 .logo-text h2 { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; }
 .logo-text span { font-size: 0.68rem; color: var(--text-secondary); font-weight: 500; letter-spacing: 0.5px; }
-
-/* Section titles */
 .section-label {
     font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: 2px; color: var(--text-muted); margin-bottom: 12px;
 }
-
-/* Agent Cards */
 .agents-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; }
 .agent-card {
     display: flex; align-items: center; gap: 12px;
@@ -180,12 +149,8 @@ body {
 .agent-avatar.zen-av { background: linear-gradient(135deg,#34d399,#059669); }
 .agent-name { font-weight: 600; font-size: 0.88rem; }
 .agent-role { font-size: 0.7rem; color: var(--text-secondary); }
-
-/* Metrics */
 .metrics-section { margin-bottom: 24px; }
-.metric-row {
-    margin-bottom: 14px;
-}
+.metric-row { margin-bottom: 14px; }
 .metric-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
 .metric-label { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); }
 .metric-value { font-size: 0.72rem; font-weight: 800; color: var(--text-primary); }
@@ -198,8 +163,6 @@ body {
     box-shadow: 0 0 8px var(--accent-glow);
     transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
 }
-
-/* Sidebar footer */
 .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
 .sidebar-btn {
     display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -210,13 +173,7 @@ body {
 }
 .sidebar-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); border-color: var(--border-accent); }
 .sidebar-btn svg { width: 14px; height: 14px; }
-
-/* ═══════════════════════════════════════════════════════════════
-   MAIN CHAT AREA
-   ═══════════════════════════════════════════════════════════════ */
 .chat-main { display: flex; flex-direction: column; height: 100%; position: relative; }
-
-/* Header */
 .chat-header {
     height: 68px; padding: 0 24px;
     background: var(--bg-elevated);
@@ -237,9 +194,7 @@ body {
     display: inline-block; box-shadow: 0 0 6px rgba(52,211,153,0.6);
     animation: pulse-dot 2s infinite;
 }
-@keyframes pulse-dot {
-    0%,100% { opacity: 1; } 50% { opacity: 0.5; }
-}
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 .header-right { display: flex; align-items: center; gap: 8px; }
 .icon-btn {
     width: 34px; height: 34px; border-radius: 50%;
@@ -251,8 +206,6 @@ body {
 .icon-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); border-color: var(--border-accent); transform: scale(1.05); }
 .icon-btn:active { transform: scale(0.95); }
 .icon-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 12px var(--accent-glow); }
-
-/* Messages Feed */
 .messages-feed {
     flex: 1; padding: 24px; overflow-y: auto;
     display: flex; flex-direction: column; gap: 4px;
@@ -262,8 +215,6 @@ body {
 .messages-feed::-webkit-scrollbar-track { background: transparent; }
 .messages-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 4px; }
 .messages-feed::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
-
-/* Welcome Card */
 .welcome-card {
     max-width: 520px; margin: auto; text-align: center;
     background: var(--bg-card); border: 1px solid var(--border-subtle);
@@ -286,21 +237,11 @@ body {
     cursor: pointer; font-family: inherit; transition: all var(--transition);
 }
 .welcome-chip:hover { background: var(--accent-soft); color: var(--text-primary); border-color: var(--accent); transform: translateY(-1px); }
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-/* Message Rows */
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .msg-row { display: flex; width: 100%; animation: msgIn 0.3s ease-out; }
 .msg-row.user { justify-content: flex-end; }
 .msg-row.bot { justify-content: flex-start; }
-@keyframes msgIn {
-    from { transform: translateY(8px) scale(0.98); opacity: 0; }
-    to { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-/* Bubbles */
+@keyframes msgIn { from { transform: translateY(8px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 .msg-bubble {
     max-width: 72%; padding: 12px 16px;
     font-size: 0.92rem; line-height: 1.65;
@@ -331,8 +272,6 @@ body {
 .msg-bubble em { font-style: italic; color: var(--text-secondary); }
 .msg-bubble ul, .msg-bubble ol { margin-left: 18px; margin-bottom: 8px; }
 .msg-bubble li { margin-bottom: 4px; }
-
-/* Timestamp */
 .msg-time {
     font-size: 0.62rem; color: var(--text-muted);
     margin-top: 2px; opacity: 0; transition: opacity 0.2s ease;
@@ -341,19 +280,13 @@ body {
 .msg-row.user + .msg-time { text-align: right; }
 .msg-row.bot + .msg-time { text-align: left; }
 .msg-row:hover + .msg-time, .msg-time:hover { opacity: 1; }
-
-/* System Notice */
-.sys-notice {
-    display: flex; justify-content: center; padding: 8px 0;
-}
+.sys-notice { display: flex; justify-content: center; padding: 8px 0; }
 .sys-notice span {
     padding: 5px 16px; border-radius: var(--radius-full);
     background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle);
     font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
     backdrop-filter: blur(8px);
 }
-
-/* Typing Indicator */
 .typing-row { display: flex; justify-content: flex-start; }
 .typing-bubble {
     padding: 14px 18px; border-radius: 18px 18px 18px 4px;
@@ -370,8 +303,6 @@ body {
     0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
     40% { transform: scale(1); opacity: 1; }
 }
-
-/* Footer / Input */
 .chat-footer {
     padding: 14px 24px 20px;
     background: var(--bg-elevated);
@@ -392,7 +323,6 @@ body {
     transition: all var(--transition);
 }
 .q-chip:hover { background: var(--accent-soft); color: var(--text-primary); border-color: var(--accent); transform: translateY(-1px); }
-
 .input-row { display: flex; gap: 10px; align-items: center; }
 .input-row input {
     flex: 1; padding: 13px 18px;
@@ -403,7 +333,6 @@ body {
 }
 .input-row input:focus { border-color: var(--accent); box-shadow: 0 0 16px var(--accent-glow); background: rgba(0,0,0,0.3); }
 .input-row input::placeholder { color: var(--text-muted); }
-
 .send-btn {
     width: 46px; height: 46px; border-radius: var(--radius-sm);
     background: var(--accent); border: none; color: #fff;
@@ -414,10 +343,6 @@ body {
 .send-btn:hover { background: var(--accent-hover); box-shadow: 0 6px 20px var(--accent-glow); transform: scale(1.04); }
 .send-btn:active { transform: scale(0.96); }
 .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-/* ═══════════════════════════════════════════════════════════════
-   RIGHT DEBUG PANEL
-   ═══════════════════════════════════════════════════════════════ */
 .debug-panel {
     background: var(--bg-elevated);
     border-left: 1px solid var(--border-subtle);
@@ -437,14 +362,12 @@ body {
 .status-badge.idle { background: rgba(255,255,255,0.05); color: var(--text-muted); }
 .status-badge.active { background: rgba(52,211,153,0.12); color: var(--success); border: 1px solid rgba(52,211,153,0.25); }
 .status-badge.error { background: rgba(248,113,113,0.12); color: var(--danger); border: 1px solid rgba(248,113,113,0.25); }
-
 .debug-body {
     flex: 1; padding: 18px; overflow-y: auto;
     display: flex; flex-direction: column; gap: 20px;
 }
 .debug-body::-webkit-scrollbar { width: 4px; }
 .debug-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 4px; }
-
 .debug-section-title {
     font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: 2px; color: var(--text-muted); margin-bottom: 8px;
@@ -458,18 +381,13 @@ body {
     font-family: var(--font-mono); font-size: 0.82rem;
     font-weight: 600; color: var(--text-primary); word-break: break-all;
 }
-
-/* Token Usage */
 .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .token-item {
     background: rgba(0,0,0,0.1); border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-xs); padding: 10px;
-    text-align: center;
+    border-radius: var(--radius-xs); padding: 10px; text-align: center;
 }
 .token-item .t-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
 .token-item .t-val { font-family: var(--font-mono); font-size: 1rem; font-weight: 800; color: var(--accent); }
-
-/* Conversation log */
 .conv-log { display: flex; flex-direction: column; gap: 6px; }
 .log-entry {
     display: flex; align-items: flex-start; gap: 8px;
@@ -482,50 +400,6 @@ body {
 .log-entry.user-log .log-icon { color: var(--accent); }
 .log-entry.bot-log .log-icon { color: var(--success); }
 .log-entry.sys-log .log-icon { color: var(--warning); }
-
-/* ═══════════════════════════════════════════════════════════════
-   API KEY MODAL
-   ═══════════════════════════════════════════════════════════════ */
-.modal-overlay {
-    position: fixed; inset: 0; z-index: 1000;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-    display: flex; justify-content: center; align-items: center;
-    animation: fadeIn 0.3s ease;
-}
-.modal-overlay.hidden { display: none; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.modal-box {
-    width: 440px; max-width: 90vw;
-    background: var(--bg-elevated); border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md); padding: 32px;
-    box-shadow: var(--shadow-lg);
-    animation: modalIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-@keyframes modalIn { from { transform: translateY(20px) scale(0.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-.modal-box h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; text-align: center; }
-.modal-box p { font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 20px; line-height: 1.5; }
-.modal-input {
-    width: 100%; padding: 13px 16px; border-radius: var(--radius-sm);
-    background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle);
-    color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem;
-    outline: none; margin-bottom: 16px; transition: border var(--transition);
-}
-.modal-input:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-.modal-submit {
-    width: 100%; padding: 13px; border-radius: var(--radius-sm);
-    background: var(--accent); border: none; color: #fff;
-    font-family: inherit; font-size: 0.95rem; font-weight: 700;
-    cursor: pointer; transition: all var(--transition);
-}
-.modal-submit:hover { background: var(--accent-hover); box-shadow: var(--shadow-glow); }
-.modal-hint {
-    margin-top: 12px; font-size: 0.72rem; color: var(--text-muted);
-    text-align: center; line-height: 1.4;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   TOAST
-   ═══════════════════════════════════════════════════════════════ */
 .toast {
     position: fixed; bottom: 20px; left: 50%;
     transform: translateX(-50%) translateY(40px);
@@ -537,10 +411,6 @@ body {
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* ═══════════════════════════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 1200px) {
     .app-shell { grid-template-columns: 260px 1fr; }
     .debug-panel { display: none; }
@@ -557,30 +427,18 @@ body {
     </style>
 </head>
 <body data-theme="nova">
-    <!-- Ambient Background Orbs -->
     <div class="ambient-orb orb-1"></div>
     <div class="ambient-orb orb-2"></div>
 
-    <!-- API Key Modal -->
-    <div class="modal-overlay" id="api-modal">
-        <div class="modal-box">
-            <h2>🔑 Connect to Claude AI</h2>
-            <p>Enter your Anthropic API key to power VisionChat with Claude's intelligence. Your key is stored only in this browser session.</p>
-            <input type="password" class="modal-input" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off">
-            <button class="modal-submit" id="api-key-submit">Connect & Launch</button>
-            <div class="modal-hint">Your API key is never sent to any server except Anthropic's API directly from your browser.<br>Get a key at <strong>console.anthropic.com</strong></div>
-        </div>
-    </div>
+    <!-- No API key modal — chat is ready immediately -->
 
-    <!-- App Shell -->
     <div class="app-shell debug-hidden" id="app-shell">
-        <!-- LEFT SIDEBAR -->
         <aside class="sidebar">
             <div class="logo-block">
                 <div class="logo-mark">⚡</div>
                 <div class="logo-text">
                     <h2>VisionChat AI</h2>
-                    <span>Claude-Powered Agent</span>
+                    <span>Groq-Powered Agent</span>
                 </div>
             </div>
 
@@ -634,20 +492,18 @@ body {
             </div>
         </aside>
 
-        <!-- MAIN CHAT -->
         <main class="chat-main">
             <header class="chat-header">
                 <div class="header-left">
                     <div class="header-avatar nova-av" id="header-avatar">🤖</div>
                     <div class="header-info">
                         <h1 id="header-name">Nova</h1>
-                        <p><span class="online-dot"></span> <span id="header-status">Online · Claude-powered</span></p>
+                        <p><span class="online-dot"></span> <span id="header-status">Online · Groq-powered</span></p>
                     </div>
                 </div>
                 <div class="header-right">
                     <button class="icon-btn active" id="btn-tts" title="Toggle Speech Output">🔊</button>
                     <button class="icon-btn" id="btn-debug" title="Toggle Debug Panel">⚙️</button>
-                    <button class="icon-btn" id="btn-key" title="Change API Key">🔑</button>
                 </div>
             </header>
 
@@ -655,7 +511,7 @@ body {
                 <div class="welcome-card" id="welcome-card">
                     <div class="welcome-icon">✨</div>
                     <h2>Welcome to VisionChat AI</h2>
-                    <p id="welcome-desc">Hi! I'm Nova, your structured AI assistant powered by Claude. I can help with coding, analysis, creative writing, math, and more. Ask me anything!</p>
+                    <p id="welcome-desc">Hi! I'm Nova. Ask me anything!</p>
                     <div class="welcome-chips">
                         <button class="welcome-chip" data-text="Explain quantum computing in simple terms">Quantum Computing 🔬</button>
                         <button class="welcome-chip" data-text="Write a Python function to reverse a linked list">Code Challenge 💻</button>
@@ -680,7 +536,6 @@ body {
             </footer>
         </main>
 
-        <!-- RIGHT DEBUG PANEL -->
         <aside class="debug-panel" id="debug-panel">
             <header class="debug-head">
                 <h3>AI Inspector</h3>
@@ -691,7 +546,7 @@ body {
                     <div class="debug-section-title">Model Info</div>
                     <div class="debug-card">
                         <div class="label">Model</div>
-                        <div class="value" id="dbg-model">claude-sonnet-4-6</div>
+                        <div class="value" id="dbg-model">llama3-70b-8192 (Groq)</div>
                     </div>
                 </div>
                 <div>
@@ -719,7 +574,7 @@ body {
                     <div class="conv-log" id="dbg-conv-log">
                         <div class="log-entry sys-log">
                             <span class="log-icon">⚙️</span>
-                            <span class="log-text">System initialized. Waiting for messages...</span>
+                            <span class="log-text">System initialized. Groq connection ready.</span>
                         </div>
                     </div>
                 </div>
@@ -727,20 +582,12 @@ body {
         </aside>
     </div>
 
-    <!-- Toast -->
     <div class="toast" id="toast">Action completed</div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════════
-   VISIONCHAT AI — COMPLETE APPLICATION LOGIC
-   All DOM manipulations via createElement/appendChild (no innerHTML with raw user strings)
-   ═══════════════════════════════════════════════════════════════ */
-
 (function() {
     'use strict';
 
-    // ── State ──────────────────────────────────────────────────
-    let API_KEY = '';
     let activeAgent = 'nova';
     let ttsEnabled = true;
     let isProcessing = false;
@@ -748,7 +595,6 @@ body {
     let totalTokensOut = 0;
     let messageCount = 0;
 
-    // Per-agent conversation histories (array of {role, content})
     const agentHistories = {
         nova: [], byte: [], spike: [], zen: []
     };
@@ -756,35 +602,34 @@ body {
     const AGENT_META = {
         nova: {
             name: 'Nova', emoji: '🤖', role: 'Structured Assistant',
-            status: 'Online · Claude-powered', placeholder: 'Message Nova...',
+            status: 'Online · Groq-powered', placeholder: 'Message Nova...',
             avatarClass: 'nova-av',
-            welcome: "Hi! I'm Nova, your structured AI assistant powered by Claude. I can help with coding, analysis, creative writing, math, and more. Ask me anything!",
+            welcome: "Hi! I'm Nova. Ask me anything!",
             system: "You are Nova, a highly professional, structured, and helpful AI assistant. You give clear, well-organized responses. Use markdown formatting (bold, lists, code blocks) when helpful. Be thorough but concise."
         },
         byte: {
             name: 'Byte', emoji: '💻', role: 'Tech Geek Engine',
             status: 'Online · Console active', placeholder: 'Execute on Byte...',
             avatarClass: 'byte-av',
-            welcome: "System.init() → I'm Byte, your geeky tech companion. I speak fluent Python, JavaScript, and sarcasm (the good kind). Feed me code problems!",
+            welcome: "System.init() → I'm Byte, your geeky tech companion. Feed me code problems!",
             system: "You are Byte, a tech-obsessed geeky AI. You love programming, systems, algorithms, and tech culture. Use tech metaphors, occasional humor, and code examples. Format responses with code blocks when relevant. Be enthusiastic about technical topics."
         },
         spike: {
             name: 'Spike', emoji: '🔥', role: 'Sarcastic Buddy',
             status: 'Online · Yawning', placeholder: 'Say something to Spike...',
             avatarClass: 'spike-av',
-            welcome: "Yeah, hi. I'm Spike. I'll answer your questions, but don't expect me to be all sunshine about it. Ask away, I guess.",
+            welcome: "Yeah, hi. I'm Spike. Ask away, I guess.",
             system: "You are Spike, a witty and mildly sarcastic AI buddy. You're helpful but deliver answers with dry humor, playful roasts, and personality. Never be mean—just entertainingly snarky. Still provide accurate, helpful information underneath the sass."
         },
         zen: {
             name: 'Zen', emoji: '🌿', role: 'Mindful Master',
             status: 'Online · Meditating', placeholder: 'Share with Zen...',
             avatarClass: 'zen-av',
-            welcome: "Peace be with you. I am Zen, a reflection of calm. Let us explore ideas together with patience and clarity. What weighs on your mind?",
+            welcome: "Peace be with you. I am Zen. What weighs on your mind?",
             system: "You are Zen, a calm, mindful, and philosophical AI. You speak with serenity, use nature metaphors, and encourage reflection. Your responses are thoughtful, measured, and bring a sense of peace. You still provide accurate information but frame it gently and wisely."
         }
     };
 
-    // ── DOM References ─────────────────────────────────────────
     const $ = (id) => document.getElementById(id);
     const messagesFeed = $('messages-feed');
     const chatForm = $('chat-form');
@@ -792,30 +637,14 @@ body {
     const sendBtn = $('send-btn');
     const appShell = $('app-shell');
     const toastEl = $('toast');
-    const apiModal = $('api-modal');
-    const apiKeyInput = $('api-key-input');
-    const apiKeySubmit = $('api-key-submit');
 
-    // ── Initialization ─────────────────────────────────────────
     function init() {
-        const savedKey = sessionStorage.getItem('vc_api_key');
-        if (savedKey) {
-            API_KEY = savedKey;
-            apiModal.classList.add('hidden');
-        }
-
         setupEventListeners();
         setupSpeechSynthesis();
+        addDebugLog('sys', 'Groq connection active. Chat ready.');
     }
 
     function setupEventListeners() {
-        // API Key modal
-        apiKeySubmit.addEventListener('click', handleApiKeySubmit);
-        apiKeyInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleApiKeySubmit();
-        });
-
-        // Chat form
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const text = msgInput.value.trim();
@@ -824,7 +653,6 @@ body {
             msgInput.value = '';
         });
 
-        // Agent switcher
         document.querySelectorAll('.agent-card').forEach(card => {
             card.addEventListener('click', () => {
                 const agent = card.dataset.agent;
@@ -832,7 +660,6 @@ body {
             });
         });
 
-        // Quick chips
         document.querySelectorAll('.q-chip, .welcome-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const text = chip.dataset.text;
@@ -840,59 +667,30 @@ body {
             });
         });
 
-        // Header buttons
         $('btn-tts').addEventListener('click', toggleTTS);
         $('btn-debug').addEventListener('click', toggleDebug);
-        $('btn-key').addEventListener('click', () => {
-            apiModal.classList.remove('hidden');
-            apiKeyInput.value = '';
-            apiKeyInput.focus();
-        });
-
-        // Sidebar buttons
         $('btn-clear').addEventListener('click', clearConversation);
         $('btn-export').addEventListener('click', exportConversation);
     }
 
-    // ── API Key ────────────────────────────────────────────────
-    function handleApiKeySubmit() {
-        const key = apiKeyInput.value.trim();
-        if (!key) return;
-        API_KEY = key;
-        sessionStorage.setItem('vc_api_key', key);
-        apiModal.classList.add('hidden');
-        showToast('API key saved — ready to chat!');
-        addDebugLog('sys', 'API key configured. Claude connection active.');
-    }
-
-    // ── Agent Switching ────────────────────────────────────────
     function switchAgent(agent) {
-        // Save current feed HTML via cloning
-        const currentFeedClone = messagesFeed.cloneNode(true);
         sessionStorage.setItem('vc_feed_' + activeAgent, messagesFeed.innerHTML);
-
         activeAgent = agent;
         const meta = AGENT_META[agent];
 
-        // Update sidebar active state
         document.querySelectorAll('.agent-card').forEach(c => {
             c.classList.toggle('active', c.dataset.agent === agent);
         });
 
-        // Update theme
         document.body.setAttribute('data-theme', agent);
 
-        // Update header
         $('header-name').textContent = meta.name;
         $('header-status').textContent = meta.status;
         const headerAvatar = $('header-avatar');
         headerAvatar.textContent = meta.emoji;
         headerAvatar.className = 'header-avatar ' + meta.avatarClass;
-
-        // Update input placeholder
         msgInput.placeholder = meta.placeholder;
 
-        // Restore or create fresh feed
         const savedFeed = sessionStorage.getItem('vc_feed_' + agent);
         if (savedFeed && agentHistories[agent].length > 0) {
             messagesFeed.innerHTML = savedFeed;
@@ -912,118 +710,61 @@ body {
         const card = document.createElement('div');
         card.className = 'welcome-card';
         card.id = 'welcome-card';
-
         const icon = document.createElement('div');
         icon.className = 'welcome-icon';
         icon.textContent = '✨';
         card.appendChild(icon);
-
         const h2 = document.createElement('h2');
         h2.textContent = 'Welcome to VisionChat AI';
         card.appendChild(h2);
-
         const p = document.createElement('p');
         p.textContent = meta.welcome;
         card.appendChild(p);
-
         const chips = document.createElement('div');
         chips.className = 'welcome-chips';
-        const chipTexts = [
-            ['Explain quantum computing simply', 'Quantum 🔬'],
-            ['Write Python code to sort a list', 'Code 💻'],
-            ['Tell me a creative story', 'Story 📖'],
-            ['Best practices for APIs', 'APIs 🏗️']
-        ];
-        chipTexts.forEach(([text, label]) => {
+        [['Explain quantum computing simply','Quantum 🔬'],['Write Python code to sort a list','Code 💻'],['Tell me a creative story','Story 📖'],['Best practices for APIs','APIs 🏗️']].forEach(([text, label]) => {
             const btn = document.createElement('button');
             btn.className = 'welcome-chip';
             btn.dataset.text = text;
             btn.textContent = label;
-            btn.addEventListener('click', () => {
-                if (!isProcessing) sendMessage(text);
-            });
+            btn.addEventListener('click', () => { if (!isProcessing) sendMessage(text); });
             chips.appendChild(btn);
         });
         card.appendChild(chips);
         messagesFeed.appendChild(card);
     }
 
-    // ── Send Message ───────────────────────────────────────────
     async function sendMessage(text) {
-        if (!API_KEY) {
-            apiModal.classList.remove('hidden');
-            apiKeyInput.focus();
-            showToast('Please enter your API key first');
-            return;
-        }
-
         isProcessing = true;
         sendBtn.disabled = true;
         messageCount++;
 
-        // Remove welcome card
         const wc = document.getElementById('welcome-card');
         if (wc) wc.remove();
 
-        // Append user bubble
         appendMessage(text, 'user');
         addDebugLog('user', truncateText(text, 80));
 
-        // Show typing indicator
         const typingEl = showTyping();
-
-        // Prepare messages array
-        const history = agentHistories[activeAgent];
-        history.push({ role: 'user', content: text });
-
-        // Limit context window (keep last 20 messages)
-        const contextMessages = history.slice(-20);
-
         const startTime = performance.now();
 
         try {
             updateDebugBadge('active', 'Processing');
-
-            const response = await callClaudeAPI(contextMessages);
-
+            const botText = await callAI(text);
             const elapsed = performance.now() - startTime;
 
-            // Remove typing
             if (typingEl && typingEl.parentNode) typingEl.remove();
 
-            // Extract response
-            const botText = response.content[0].text;
-            const inputTokens = response.usage?.input_tokens || 0;
-            const outputTokens = response.usage?.output_tokens || 0;
-
-            totalTokensIn += inputTokens;
-            totalTokensOut += outputTokens;
-
-            // Save to history
-            history.push({ role: 'assistant', content: botText });
-
-            // Render bot bubble
             appendMessage(botText, 'bot');
-
-            // Speak
             if (ttsEnabled) speak(botText);
 
-            // Debug updates
             updateDebugBadge('active', 'Ready');
-            $('dbg-tokens-in').textContent = totalTokensIn.toLocaleString();
-            $('dbg-tokens-out').textContent = totalTokensOut.toLocaleString();
             $('dbg-latency').textContent = Math.round(elapsed) + 'ms';
-            addDebugLog('bot', 'Response (' + outputTokens + ' tokens, ' + Math.round(elapsed) + 'ms)');
-
+            addDebugLog('bot', 'Response (' + Math.round(elapsed) + 'ms)');
             updateMetrics();
             scrollToBottom();
-
         } catch (err) {
             if (typingEl && typingEl.parentNode) typingEl.remove();
-            
-            // Remove the failed message from history
-            history.pop();
-
             const errMsg = err.message || 'Unknown error';
             appendMessage('⚠️ Error: ' + errMsg, 'bot');
             updateDebugBadge('error', 'Error');
@@ -1033,67 +774,80 @@ body {
             isProcessing = false;
             sendBtn.disabled = false;
             msgInput.focus();
-
-            // Persist feed
             sessionStorage.setItem('vc_feed_' + activeAgent, messagesFeed.innerHTML);
         }
     }
 
-    // ── Claude API Call ────────────────────────────────────────
-    async function callClaudeAPI(messages) {
-        const meta = AGENT_META[activeAgent];
+    async function callAI(userMessage) {
+        const agent = AGENT_META[activeAgent];
+        const history = agentHistories[activeAgent];
 
-        const body = {
-            model: 'claude-sonnet-4-6',
-            max_tokens: 2048,
-            system: meta.system,
-            messages: messages.map(m => ({ role: m.role, content: m.content }))
-        };
+        const messages = [
+            ...history.slice(-20),
+            { role: "user", content: userMessage }
+        ];
 
-        const resp = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': API_KEY,
-                'anthropic-version': '2023-06-01',
-                'anthropic-dangerous-direct-browser-access': 'true'
-            },
-            body: JSON.stringify(body)
-        });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
 
-        if (!resp.ok) {
-            const errBody = await resp.json().catch(() => ({}));
-            const errMsg = errBody.error?.message || 'API returned status ' + resp.status;
-            throw new Error(errMsg);
+        const response = await fetch(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+                method: "POST",
+                signal: controller.signal,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer PASTE_YOUR_GROQ_KEY_HERE"
+                },
+                body: JSON.stringify({
+                    model: "llama3-70b-8192",
+                    max_tokens: 1024,
+                    messages: [
+                        { role: "system", content: agent.system },
+                        ...messages
+                    ]
+                })
+            }
+        );
+
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error?.message || "API_ERROR");
         }
 
-        return await resp.json();
+        const data = await response.json();
+        const reply = data.choices[0].message.content;
+
+        const usage = data.usage || {};
+        totalTokensIn += usage.prompt_tokens || 0;
+        totalTokensOut += usage.completion_tokens || 0;
+        $('dbg-tokens-in').textContent = totalTokensIn.toLocaleString();
+        $('dbg-tokens-out').textContent = totalTokensOut.toLocaleString();
+
+        history.push({ role: "user", content: userMessage });
+        history.push({ role: "assistant", content: reply });
+
+        return reply;
     }
 
-    // ── DOM Rendering (Safe — no innerHTML with user strings) ──
     function appendMessage(text, sender) {
         const row = document.createElement('div');
         row.className = 'msg-row ' + sender;
-
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
-
         if (sender === 'bot') {
             bubble.innerHTML = renderMarkdown(text);
         } else {
-            // User text: safe textContent only
             bubble.textContent = text;
         }
-
         row.appendChild(bubble);
         messagesFeed.appendChild(row);
-
-        // Timestamp
         const time = document.createElement('div');
         time.className = 'msg-time';
         time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         messagesFeed.appendChild(time);
-
         scrollToBottom();
     }
 
@@ -1110,7 +864,6 @@ body {
         const row = document.createElement('div');
         row.className = 'typing-row';
         row.id = 'typing-indicator';
-
         const bubble = document.createElement('div');
         bubble.className = 'typing-bubble';
         for (let i = 0; i < 3; i++) {
@@ -1124,38 +877,21 @@ body {
         return row;
     }
 
-    // ── Markdown Renderer ──────────────────────────────────────
     function renderMarkdown(text) {
-        // Escape HTML first
-        let html = text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-
-        // Code blocks: ```lang\ncode\n```
-        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-            return '<pre><code class="language-' + lang + '">' + code.trim() + '</code></pre>';
-        });
-        // Inline code
+        let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => '<pre><code class="language-' + lang + '">' + code.trim() + '</code></pre>');
         html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-        // Bold
         html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-        // Italic
         html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-        // Lists
         html = html.replace(/\n\s*[-•]\s+([^\n]+)/g, '<li>$1</li>');
         html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
         html = html.replace(/<\/ul>\s*<ul>/g, '');
-        // Numbered lists
         html = html.replace(/\n\s*\d+\.\s+([^\n]+)/g, '<li>$1</li>');
-        // Paragraphs
         html = html.replace(/\n\n/g, '</p><p>');
         html = html.replace(/\n/g, '<br>');
-
         return '<p>' + html + '</p>';
     }
 
-    // ── Debug Panel ────────────────────────────────────────────
     function updateDebugBadge(type, text) {
         const badge = $('debug-badge');
         badge.textContent = text;
@@ -1166,39 +902,30 @@ body {
         const log = $('dbg-conv-log');
         const entry = document.createElement('div');
         entry.className = 'log-entry ' + type + '-log';
-
         const icon = document.createElement('span');
         icon.className = 'log-icon';
         icon.textContent = type === 'user' ? '👤' : type === 'bot' ? '🤖' : '⚙️';
         entry.appendChild(icon);
-
         const span = document.createElement('span');
         span.className = 'log-text';
         span.textContent = text;
         entry.appendChild(span);
-
         log.appendChild(entry);
         log.scrollTop = log.scrollHeight;
     }
 
-    // ── Metrics ────────────────────────────────────────────────
     function updateMetrics() {
         const msgs = agentHistories[activeAgent].length;
         $('m1-label').textContent = 'Messages';
         $('m1-value').textContent = msgs;
         $('m1-fill').style.width = Math.min(msgs * 5, 100) + '%';
-
         $('m2-label').textContent = 'Total Tokens';
         $('m2-value').textContent = (totalTokensIn + totalTokensOut).toLocaleString();
         $('m2-fill').style.width = Math.min((totalTokensIn + totalTokensOut) / 100, 100) + '%';
     }
 
-    // ── TTS ────────────────────────────────────────────────────
     function setupSpeechSynthesis() {
-        // Pre-load voices
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.getVoices();
-        }
+        if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
     }
 
     function toggleTTS() {
@@ -1214,31 +941,23 @@ body {
         if (!('speechSynthesis' in window) || !ttsEnabled) return;
         window.speechSynthesis.cancel();
         const clean = text.replace(/<[^>]*>/g, '').replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1').replace(/`([^`]+)`/g, '$1');
-        if (clean.length > 500) return; // Skip very long responses
+        if (clean.length > 500) return;
         const utter = new SpeechSynthesisUtterance(clean.substring(0, 300));
         const voices = window.speechSynthesis.getVoices();
-        const voiceMap = {
-            nova: { rate: 1.0, pitch: 1.05 },
-            byte: { rate: 1.15, pitch: 1.2 },
-            spike: { rate: 1.1, pitch: 0.9 },
-            zen: { rate: 0.8, pitch: 0.85 }
-        };
+        const voiceMap = { nova:{rate:1.0,pitch:1.05}, byte:{rate:1.15,pitch:1.2}, spike:{rate:1.1,pitch:0.9}, zen:{rate:0.8,pitch:0.85} };
         const cfg = voiceMap[activeAgent];
-        utter.rate = cfg.rate;
-        utter.pitch = cfg.pitch;
+        utter.rate = cfg.rate; utter.pitch = cfg.pitch;
         const enVoice = voices.find(v => v.lang.startsWith('en'));
         if (enVoice) utter.voice = enVoice;
         window.speechSynthesis.speak(utter);
     }
 
-    // ── Toggle Debug ───────────────────────────────────────────
     function toggleDebug() {
         appShell.classList.toggle('debug-hidden');
         $('btn-debug').classList.toggle('active', !appShell.classList.contains('debug-hidden'));
         showToast(appShell.classList.contains('debug-hidden') ? 'Debug panel hidden' : 'Debug panel visible');
     }
 
-    // ── Clear & Export ─────────────────────────────────────────
     function clearConversation() {
         agentHistories[activeAgent] = [];
         messagesFeed.innerHTML = '';
@@ -1251,10 +970,7 @@ body {
 
     function exportConversation() {
         const history = agentHistories[activeAgent];
-        if (history.length === 0) {
-            showToast('No messages to export');
-            return;
-        }
+        if (history.length === 0) { showToast('No messages to export'); return; }
         let log = '═══════════════════════════════════════\n';
         log += 'VisionChat AI — Export\n';
         log += 'Agent: ' + AGENT_META[activeAgent].name + '\n';
@@ -1275,11 +991,8 @@ body {
         showToast('Chat exported!');
     }
 
-    // ── Utilities ──────────────────────────────────────────────
     function scrollToBottom() {
-        requestAnimationFrame(() => {
-            messagesFeed.scrollTop = messagesFeed.scrollHeight;
-        });
+        requestAnimationFrame(() => { messagesFeed.scrollTop = messagesFeed.scrollHeight; });
     }
 
     function showToast(msg) {
@@ -1292,9 +1005,7 @@ body {
         return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
     }
 
-    // ── Boot ───────────────────────────────────────────────────
     init();
-
 })();
 </script>
 </body>
