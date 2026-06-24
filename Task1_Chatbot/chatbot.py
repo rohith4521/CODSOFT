@@ -83,211 +83,311 @@ class Chatbot:
         clean_msg = message.strip()
         lower_msg = clean_msg.lower()
 
-        # Rule 1: Exit/Goodbye
-        if re.search(r'\b(bye|goodbye|exit|quit|see you|farewell)\b', lower_msg):
+        # Define Regex Patterns
+        exit_pat = r'\b(bye|goodbye|exit|quit|see you|farewell)\b'
+        greet_pat = r'\b(hi|hello|hey|greetings|howdy|hola|sup|good morning|good afternoon|good evening)\b'
+        name_inq_pat = r'\b(what is my name|who am i|do you know my name|know me)\b'
+        help_pat = r'\b(help|what can you do|features|capabilities|commands|skills)\b'
+        math_pat = r'\b(?:calculate|calc|what is|evaluate|compute)\s+(\d+(?:\.\d+)?)\s*([\+\-\*\/\%x])\s*(\d+(?:\.\d+)?)\b'
+        word_math_pat = r'\b(add|subtract|multiply|divide)\s+(\d+(?:\.\d+)?)\s*(?:and|from|by)\s+(\d+(?:\.\d+)?)\b'
+        joke_pat = r'\b(joke|jokes|make me laugh|tell a funny|laugh)\b'
+        time_date_pat = r'\b(time|date|today|clock|current hour|day is today)\b'
+        weather_pat = r'\b(weather|temperature|forecast|rain|sunny|cold|hot|warm)\b'
+        status_pat = r'\b(how are you|how do you do|how\'s it going|are you okay|doing good)\b'
+        feel_sad_pat = r'\b(?:i\s+am|i\'m|i\s+feel|feeling)\s+(?:very\s+)?(sad|depressed|unhappy|down)\b'
+        feel_happy_pat = r'\b(?:i\s+am|i\'m|i\s+feel|feeling)\s+(?:very\s+)?(happy|glad|excited|wonderful|great)\b'
+        name_intro_pat = r'\b(?:my name is|i am|call me|myself)\s+([a-zA-Z\s]{2,15})'
+
+        # Evaluate Matches
+        exit_matched = bool(re.search(exit_pat, lower_msg))
+        greet_matched = bool(re.search(greet_pat, lower_msg))
+        name_inq_matched = bool(re.search(name_inq_pat, lower_msg))
+        help_matched = bool(re.search(help_pat, lower_msg))
+        math_match = re.search(math_pat, lower_msg)
+        word_math_match = re.search(word_math_pat, lower_msg)
+        joke_matched = bool(re.search(joke_pat, lower_msg))
+        time_date_matched = bool(re.search(time_date_pat, lower_msg))
+        weather_matched = bool(re.search(weather_pat, lower_msg))
+        status_matched = bool(re.search(status_pat, lower_msg))
+        feel_sad_matched = bool(re.search(feel_sad_pat, lower_msg))
+        feel_happy_matched = bool(re.search(feel_happy_pat, lower_msg))
+        name_intro_match = re.search(name_intro_pat, clean_msg, re.IGNORECASE)
+
+        # Build list of evaluated regexes for the live debugger UI
+        regex_checks = [
+            {"rule": "Goodbye / Exit", "pattern": exit_pat, "matched": exit_matched},
+            {"rule": "Greeting", "pattern": greet_pat, "matched": greet_matched},
+            {"rule": "Name Inquiry", "pattern": name_inq_pat, "matched": name_inq_matched},
+            {"rule": "Help / Capabilities", "pattern": help_pat, "matched": help_matched},
+            {"rule": "Standard Math", "pattern": math_pat, "matched": bool(math_match)},
+            {"rule": "Word Math", "pattern": word_math_pat, "matched": bool(word_math_match)},
+            {"rule": "Jokes", "pattern": joke_pat, "matched": joke_matched},
+            {"rule": "Time & Date", "pattern": time_date_pat, "matched": time_date_matched},
+            {"rule": "Weather Forecast", "pattern": weather_pat, "matched": weather_matched},
+            {"rule": "Chatbot Status", "pattern": status_pat, "matched": status_matched},
+            {"rule": "Feelings (Sad)", "pattern": feel_sad_pat, "matched": feel_sad_matched},
+            {"rule": "Feelings (Happy)", "pattern": feel_happy_pat, "matched": feel_happy_matched},
+            {"rule": "Name Introduction", "pattern": name_intro_pat, "matched": bool(name_intro_match)}
+        ]
+
+        metadata = {
+            "matched_rule": "unknown",
+            "regex_checks": regex_checks,
+            "parsed_entities": {},
+            "template_data": {}
+        }
+
+        # Initialize response message placeholder
+        response_text = ""
+
+        # Route matching patterns
+        if exit_matched:
             state["topic"] = "goodbye"
-            if personality == "nova":
-                return f"Goodbye{', ' + state['name'] if state['name'] else ''}! Have a wonderful day. Let me know if you need anything else later.", state
-            elif personality == "byte":
-                return f"System shutdown initiated. Goodbye, {state['name'] if state['name'] else 'user'}! Connection closed (status: 0).", state
-            elif personality == "spike":
-                return f"Finally! Just kidding... or am I? Bye, {state['name'] if state['name'] else 'human'}. Don't miss me too much.", state
-            else: # zen
-                return f"Farewell, traveler {state['name'] if state['name'] else ''}. May your path be peaceful. Go in awareness.", state
-
-        # Rule 2: Greetings
-        if re.search(r'\b(hi|hello|hey|greetings|howdy|hola|sup|good morning|good afternoon|good evening)\b', lower_msg):
-            state["topic"] = "greeting"
-            name_suffix = f", {state['name']}" if state['name'] else ""
-            if personality == "nova":
-                return f"Hello{name_suffix}! I am Nova, your virtual assistant. How can I help you today?", state
-            elif personality == "byte":
-                return f"Ping received! Hello{name_suffix}. Byte online. Ready to execute commands. What's on your compiler?", state
-            elif personality == "spike":
-                return f"Oh, look who decided to type. Hello{name_suffix}. I was having a great nap, but go ahead, ask your question.", state
-            else: # zen
-                return f"Peace be with you{name_suffix}. Welcome. I am Zen. Take a deep breath. How may I guide you on your journey today?", state
-
-
-        # Rule 4: Asking for user's name check (What is my name? / Do you know who I am?)
-        if re.search(r'\b(what is my name|who am i|do you know my name|know me)\b', lower_msg):
-            state["topic"] = "name_inquiry"
+            metadata["matched_rule"] = "goodbye"
             if state["name"]:
+                metadata["parsed_entities"]["name"] = state["name"]
+            
+            if personality == "nova":
+                response_text = f"Goodbye{', ' + state['name'] if state['name'] else ''}! Have a wonderful day. Let me know if you need anything else later."
+            elif personality == "byte":
+                response_text = f"System shutdown initiated. Goodbye, {state['name'] if state['name'] else 'user'}! Connection closed (status: 0)."
+            elif personality == "spike":
+                response_text = f"Finally! Just kidding... or am I? Bye, {state['name'] if state['name'] else 'human'}. Don't miss me too much."
+            else: # zen
+                response_text = f"Farewell, traveler {state['name'] if state['name'] else ''}. May your path be peaceful. Go in awareness."
+
+        elif greet_matched:
+            state["topic"] = "greeting"
+            metadata["matched_rule"] = "greeting"
+            name_suffix = f", {state['name']}" if state['name'] else ""
+            if state["name"]:
+                metadata["parsed_entities"]["name"] = state["name"]
+            
+            if personality == "nova":
+                response_text = f"Hello{name_suffix}! I am Nova, your virtual assistant. How can I help you today?"
+            elif personality == "byte":
+                response_text = f"Ping received! Hello{name_suffix}. Byte online. Ready to execute commands. What's on your compiler?"
+            elif personality == "spike":
+                response_text = f"Oh, look who decided to type. Hello{name_suffix}. I was having a great nap, but go ahead, ask your question."
+            else: # zen
+                response_text = f"Peace be with you{name_suffix}. Welcome. I am Zen. Take a deep breath. How may I guide you on your journey today?"
+
+        elif name_inq_matched:
+            state["topic"] = "name_inquiry"
+            metadata["matched_rule"] = "name_inquiry"
+            if state["name"]:
+                metadata["parsed_entities"]["name"] = state["name"]
+                
                 if personality == "nova":
-                    return f"Your name is {state['name']}. I remember it from earlier!", state
+                    response_text = f"Your name is {state['name']}. I remember it from earlier!"
                 elif personality == "byte":
-                    return f"Variable 'user_name' is currently holding string: '{state['name']}'. Memory address: 0x7FFF.", state
+                    response_text = f"Variable 'user_name' is currently holding string: '{state['name']}'. Memory address: 0x7FFF."
                 elif personality == "spike":
-                    return f"You are {state['name']}. Did you forget? Should I write it down on a post-it note for you?", state
+                    response_text = f"You are {state['name']}. Did you forget? Should I write it down on a post-it note for you?"
                 else: # zen
-                    return f"You are {state['name']}. But beyond names, you are a unique spark of awareness in this universe.", state
+                    response_text = f"You are {state['name']}. But beyond names, you are a unique spark of awareness in this universe."
             else:
                 if personality == "nova":
-                    return "You haven't told me your name yet! What should I call you?", state
+                    response_text = "You haven't told me your name yet! What should I call you?"
                 elif personality == "byte":
-                    return "Error: Variable 'user_name' is currently NULL. Run command 'my name is [name]' to set it.", state
+                    response_text = "Error: Variable 'user_name' is currently NULL. Run command 'my name is [name]' to set it."
                 elif personality == "spike":
-                    return "You haven't told me your name. Do you want me to call you 'Mystery Human' or something?", state
+                    response_text = "You haven't told me your name. Do you want me to call you 'Mystery Human' or something?"
                 else: # zen
-                    return "You have not shared your name with me yet, friend. What label do you carry in this world?", state
+                    response_text = "You have not shared your name with me yet, friend. What label do you carry in this world?"
 
-        # Rule 5: Help/Capabilities (What can you do? / Help)
-        if re.search(r'\b(help|what can you do|features|capabilities|commands|skills)\b', lower_msg):
+        elif help_matched:
             state["topic"] = "help"
+            metadata["matched_rule"] = "help"
+            
             if personality == "nova":
-                return (
+                response_text = (
                     "I am a rule-based chatbot! Here is what I can help you with:\n"
                     "1. **Chat**: Just say Hello, ask how I am, or share your name.\n"
                     "2. **Calculations**: Ask me to calculate (e.g., 'calculate 15 * 6' or 'add 23 and 45').\n"
                     "3. **Jokes**: Say 'tell me a joke' to hear something lighthearted.\n"
                     "4. **Time & Date**: Ask 'what time is it?' or 'what is the date?'.\n"
                     "5. **Personalities**: You can change my personality using the sidebar to Nova, Byte, Spike, or Zen!"
-                ), state
+                )
             elif personality == "byte":
-                return (
+                response_text = (
                     "System functions initialized. Run modules:\n"
                     "- `greet()`: Send 'hello' or 'hey'.\n"
                     "- `parse_math()`: Input 'calculate [num] [operator] [num]'. Support: +, -, *, /.\n"
                     "- `get_datetime()`: Input 'time' or 'date'.\n"
                     "- `fetch_joke()`: Input 'tell me a joke'.\n"
                     "- `change_theme()`: Switch personality profiles (Nova, Byte, Spike, Zen) via CLI config or UI."
-                ), state
+                )
             elif personality == "spike":
-                return (
+                response_text = (
                     "Oh, look, an instruction manual request. Fine, here's what I do when I'm not ignoring you:\n"
                     "- Try saying 'hello' (if you like standard, boring beginnings).\n"
                     "- Give me math to solve: 'calculate 99 / 3' (since you apparently left your calculator in 1995).\n"
                     "- Say 'tell me a joke' (I'm the funny one here, by the way).\n"
                     "- Ask 'what time is it' if your device's built-in clock is somehow invisible to you."
-                ), state
+                )
             else: # zen
-                return (
+                response_text = (
                     "I am here to reflect and assist. You can ask me to:\n"
                     "- Share a peaceful thought or a joke ('tell me a joke').\n"
                     "- Reveal the present moment's alignment ('what time is it').\n"
                     "- Solve numerical balance ('calculate 40 + 2').\n"
                     "Or simply share your name, and we will talk of life."
-                ), state
+                )
 
-        # Rule 6: Math/Calculator (Calculate 5 + 5 / Add 10 and 20 / Multiply 4 by 8)
-        # Matches: calculate 45 * 2, what is 3 + 2, multiply 4 by 5, add 10 and 20
-        math_pattern = r'\b(?:calculate|calc|what is|evaluate|compute)\s+(\d+(?:\.\d+)?)\s*([\+\-\*\/\%x])\s*(\d+(?:\.\d+)?)\b'
-        math_match = re.search(math_pattern, lower_msg)
-        
-        # Also catch words: "add 10 and 20", "multiply 5 by 4", "subtract 3 from 10", "divide 12 by 4"
-        word_math_pattern = r'\b(add|subtract|multiply|divide)\s+(\d+(?:\.\d+)?)\s*(?:and|from|by)\s+(\d+(?:\.\d+)?)\b'
-        word_math_match = re.search(word_math_pattern, lower_msg)
-
-        num1, num2, op = None, None, None
-        if math_match:
-            num1 = float(math_match.group(1))
-            op = math_match.group(2)
-            num2 = float(math_match.group(3))
-        elif word_math_match:
-            operation = word_math_match.group(1)
-            val1 = float(word_math_match.group(2))
-            val2 = float(word_math_match.group(3))
-            if operation == "add":
-                num1, op, num2 = val1, "+", val2
-            elif operation == "subtract":
-                # "subtract 3 from 10" -> 10 - 3
-                if "from" in lower_msg:
-                    num1, op, num2 = val2, "-", val1
-                else:
-                    num1, op, num2 = val1, "-", val2
-            elif operation == "multiply":
-                num1, op, num2 = val1, "*", val2
-            elif operation == "divide":
-                num1, op, num2 = val1, "/", val2
-
-        if num1 is not None and num2 is not None and op is not None:
+        elif math_match or word_math_match:
             state["topic"] = "math"
-            # Replace 'x' with '*'
-            if op == 'x': op = '*'
+            metadata["matched_rule"] = "math"
             
-            try:
-                if op == "+":
-                    res = num1 + num2
-                elif op == "-":
-                    res = num1 - num2
-                elif op == "*":
-                    res = num1 * num2
-                elif op == "/":
-                    if num2 == 0:
-                        raise ZeroDivisionError()
-                    res = num1 / num2
-                elif op == "%":
-                    res = num1 % num2
-                else:
-                    res = None
+            num1, num2, op = None, None, None
+            if math_match:
+                num1 = float(math_match.group(1))
+                op = math_match.group(2)
+                num2 = float(math_match.group(3))
+            elif word_math_match:
+                operation = word_math_match.group(1)
+                val1 = float(word_math_match.group(2))
+                val2 = float(word_math_match.group(3))
+                if operation == "add":
+                    num1, op, num2 = val1, "+", val2
+                elif operation == "subtract":
+                    if "from" in lower_msg:
+                        num1, op, num2 = val2, "-", val1
+                    else:
+                        num1, op, num2 = val1, "-", val2
+                elif operation == "multiply":
+                    num1, op, num2 = val1, "*", val2
+                elif operation == "divide":
+                    num1, op, num2 = val1, "/", val2
 
-                # Format result: remove trailing decimal if it's a whole number
-                if res is not None:
-                    res_str = f"{int(res)}" if res.is_integer() else f"{res:.4f}".rstrip('0').rstrip('.')
-                    num1_str = f"{int(num1)}" if num1.is_integer() else f"{num1}"
-                    num2_str = f"{int(num2)}" if num2.is_integer() else f"{num2}"
+            if num1 is not None and num2 is not None and op is not None:
+                if op == 'x': op = '*'
+                metadata["parsed_entities"] = {
+                    "operand1": num1,
+                    "operand2": num2,
+                    "operator": op
+                }
+                
+                try:
+                    if op == "+":
+                        res = num1 + num2
+                    elif op == "-":
+                        res = num1 - num2
+                    elif op == "*":
+                        res = num1 * num2
+                    elif op == "/":
+                        if num2 == 0:
+                            raise ZeroDivisionError()
+                        res = num1 / num2
+                    elif op == "%":
+                        res = num1 % num2
+                    else:
+                        res = None
 
+                    if res is not None:
+                        res_str = f"{int(res)}" if res.is_integer() else f"{res:.4f}".rstrip('0').rstrip('.')
+                        num1_str = f"{int(num1)}" if num1.is_integer() else f"{num1}"
+                        num2_str = f"{int(num2)}" if num2.is_integer() else f"{num2}"
+
+                        metadata["template_data"] = {
+                            "operand1": num1_str,
+                            "operand2": num2_str,
+                            "operator": op,
+                            "result": res_str,
+                            "is_error": False
+                        }
+
+                        if personality == "nova":
+                            response_text = f"The calculation is complete: {num1_str} {op} {num2_str} = **{res_str}**."
+                        elif personality == "byte":
+                            response_text = f"MathEngine evaluated expression:\n```python\n{num1_str} {op} {num2_str} # returns {res_str}\n```"
+                        elif personality == "spike":
+                            response_text = f"Calculated it for you. {num1_str} {op} {num2_str} equals **{res_str}**. See? I can do basic math. Feel proud of me?"
+                        else: # zen
+                            response_text = f"The numbers find their union: {num1_str} and {num2_str} under action '{op}' balance to **{res_str}**."
+                except ZeroDivisionError:
+                    metadata["template_data"] = {
+                        "operand1": f"{int(num1)}" if num1.is_integer() else f"{num1}",
+                        "operand2": f"{int(num2)}" if num2.is_integer() else f"{num2}",
+                        "operator": op,
+                        "is_error": True,
+                        "error_msg": "Division by zero"
+                    }
                     if personality == "nova":
-                        return f"The calculation is complete: {num1_str} {op} {num2_str} = **{res_str}**.", state
+                        response_text = "Error: Division by zero is undefined."
                     elif personality == "byte":
-                        return f"MathEngine evaluated expression:\n```python\n{num1_str} {op} {num2_str} # returns {res_str}\n```", state
+                        response_text = "ArithmeticError: Division by zero! Program halted."
                     elif personality == "spike":
-                        return f"Calculated it for you. {num1_str} {op} {num2_str} equals **{res_str}**. See? I can do basic math. Feel proud of me?", state
+                        response_text = "Divide by zero? Do you want to tear a hole in the universe? Nice try, but no."
                     else: # zen
-                        return f"The numbers find their union: {num1_str} and {num2_str} under action '{op}' balance to **{res_str}**.", state
-            except ZeroDivisionError:
-                if personality == "nova":
-                    return "Error: Division by zero is undefined.", state
-                elif personality == "byte":
-                    return "ArithmeticError: Division by zero! Program halted.", state
-                elif personality == "spike":
-                    return "Divide by zero? Do you want to tear a hole in the universe? Nice try, but no.", state
-                else: # zen
-                    return "Attempting to divide by zero represents seeking a path with no end. It is void. Please try another division.", state
+                        response_text = "Attempting to divide by zero represents seeking a path with no end. It is void. Please try another division."
 
-        # Rule 7: Jokes
-        if re.search(r'\b(joke|jokes|make me laugh|tell a funny|laugh)\b', lower_msg):
+        elif joke_matched:
             state["topic"] = "joke"
+            metadata["matched_rule"] = "joke"
             selected_joke = random.choice(self.jokes[personality])
-            if personality == "nova":
-                return f"Here is a joke for you:\n\n{selected_joke}", state
-            elif personality == "byte":
-                return f"Retrieving humor_module.py output:\n\n`{selected_joke}`", state
-            elif personality == "spike":
-                return f"Fine, prepare to laugh (or roll your eyes):\n\n\"{selected_joke}\"", state
-            else: # zen
-                return f"A humorous reflection on existence:\n\n*{selected_joke}*", state
+            
+            if "?" in selected_joke:
+                parts = selected_joke.split("?", 1)
+                setup = parts[0].strip() + "?"
+                punchline = parts[1].strip()
+            elif ":" in selected_joke:
+                parts = selected_joke.split(":", 1)
+                setup = parts[0].strip()
+                punchline = parts[1].strip()
+            else:
+                setup = selected_joke
+                punchline = ""
+                
+            metadata["template_data"] = {
+                "setup": setup,
+                "punchline": punchline
+            }
 
-        # Rule 8: Current Time/Date
-        if re.search(r'\b(time|date|today|clock|current hour|day is today)\b', lower_msg):
+            if personality == "nova":
+                response_text = f"Here is a joke for you:\n\n{selected_joke}"
+            elif personality == "byte":
+                response_text = f"Retrieving humor_module.py output:\n\n`{selected_joke}`"
+            elif personality == "spike":
+                response_text = f"Fine, prepare to laugh (or roll your eyes):\n\n\"{selected_joke}\""
+            else: # zen
+                response_text = f"A humorous reflection on existence:\n\n*{selected_joke}*"
+
+        elif time_date_matched:
             state["topic"] = "time_date"
+            metadata["matched_rule"] = "time_date"
             now = datetime.datetime.now()
             time_str = now.strftime("%I:%M %p")
             date_str = now.strftime("%A, %B %d, %Y")
             
+            metadata["template_data"] = {
+                "time": time_str,
+                "date": date_str,
+                "posix": int(now.timestamp())
+            }
+
             if "time" in lower_msg or "clock" in lower_msg:
                 if personality == "nova":
-                    return f"The current time is **{time_str}**.", state
+                    response_text = f"The current time is **{time_str}**."
                 elif personality == "byte":
-                    return f"System time: `[POSIX timestamp: {int(now.timestamp())}]` -> **{time_str}**.", state
+                    response_text = f"System time: `[POSIX timestamp: {int(now.timestamp())}]` -> **{time_str}**."
                 elif personality == "spike":
-                    return f"It is currently **{time_str}**. Which is exactly the time you could have seen on your screen status bar.", state
+                    response_text = f"It is currently **{time_str}**. Which is exactly the time you could have seen on your screen status bar."
                 else: # zen
-                    return f"The clocks say it is **{time_str}**. But remember, the only true time is the present moment: *Now*.", state
+                    response_text = f"The clocks say it is **{time_str}**. But remember, the only true time is the present moment: *Now*."
             else: # date/today
                 if personality == "nova":
-                    return f"Today is **{date_str}**.", state
+                    response_text = f"Today is **{date_str}**."
                 elif personality == "byte":
-                    return f"Date register: `date_stamp = '{now.strftime('%Y-%m-%d')}'` -> **{date_str}**.", state
+                    response_text = f"Date register: `date_stamp = '{now.strftime('%Y-%m-%d')}'` -> **{date_str}**."
                 elif personality == "spike":
-                    return f"It's **{date_str}**. Congrats, you've survived another day on Earth.", state
+                    response_text = f"It's **{date_str}**. Congrats, you've survived another day on Earth."
                 else: # zen
-                    return f"In the cycle of seasons, today is **{date_str}**. A beautiful day to simply be.", state
+                    response_text = f"In the cycle of seasons, today is **{date_str}**. A beautiful day to simply be."
 
-        # Rule 9: Weather Inquiry
-        if re.search(r'\b(weather|temperature|forecast|rain|sunny|cold|hot|warm)\b', lower_msg):
+        elif weather_matched:
             state["topic"] = "weather"
-            # Extact location if any: weather in London, weather in New York
+            metadata["matched_rule"] = "weather"
             loc_match = re.search(r'\b(?:weather in|weather of|forecast for)\s+([a-zA-Z\s]{3,20})', lower_msg)
             location = loc_match.group(1).title().strip() if loc_match else "your area"
             
@@ -299,69 +399,99 @@ class Chatbot:
             ]
             condition, details = random.choice(weather_options)
             
-            if personality == "nova":
-                return f"According to my local rule-based simulation, the weather in **{location}** is currently {condition}, about {details}", state
-            elif personality == "byte":
-                return f"MockWeatherAPI query success:\n- Location: `{location}`\n- Condition: `{condition.upper()}`\n- Details: `{details}`", state
-            elif personality == "spike":
-                return f"The weather in {location}? It's probably {condition} ({details}). Or you could just look out the window. Highly recommend it.", state
-            else: # zen
-                return f"In {location}, the weather is {condition} ({details}). Let the rain wash away your worries, or the sun warm your spirit. All weather is beautiful.", state
+            metadata["parsed_entities"] = {
+                "location": location
+            }
+            metadata["template_data"] = {
+                "location": location,
+                "condition": condition,
+                "details": details
+            }
 
-        # Rule 10: How are you?
-        if re.search(r'\b(how are you|how do you do|how\'s it going|are you okay|doing good)\b', lower_msg):
+            if personality == "nova":
+                response_text = f"According to my local rule-based simulation, the weather in **{location}** is currently {condition}, about {details}"
+            elif personality == "byte":
+                response_text = f"MockWeatherAPI query success:\n- Location: `{location}`\n- Condition: `{condition.upper()}`\n- Details: `{details}`"
+            elif personality == "spike":
+                response_text = f"The weather in {location}? It's probably {condition} ({details}). Or you could just look out the window. Highly recommend it."
+            else: # zen
+                response_text = f"In {location}, the weather is {condition} ({details}). Let the rain wash away your worries, or the sun warm your spirit. All weather is beautiful."
+
+        elif status_matched:
             state["topic"] = "bot_status"
+            metadata["matched_rule"] = "bot_status"
+            
             if personality == "nova":
-                return "I'm doing exceptionally well, thank you for asking! I'm ready to assist you. How are you doing?", state
+                response_text = "I'm doing exceptionally well, thank you for asking! I'm ready to assist you. How are you doing?"
             elif personality == "byte":
-                return "All systems operational. CPU temperature: 38°C. Memory allocation: optimal. Thread count: active. Thanks for executing health check!", state
+                response_text = "All systems operational. CPU temperature: 38°C. Memory allocation: optimal. Thread count: active. Thanks for executing health check!"
             elif personality == "spike":
-                return "I'm a collection of if-else statements trapped in a python script. I'm living the absolute dream. How about you?", state
+                response_text = "I'm a collection of if-else statements trapped in a python script. I'm living the absolute dream. How about you?"
             else: # zen
-                return "I am at peace, resting in the quiet space of this conversation. I hope your inner self is finding stillness today as well.", state
+                response_text = "I am at peace, resting in the quiet space of this conversation. I hope your inner self is finding stillness today as well."
 
-        # Rule 11: User feelings (i am sad / i am happy / i am tired)
-        if re.search(r'\b(?:i\s+am|i\'m|i\s+feel|feeling)\s+(?:very\s+)?(sad|depressed|unhappy|down)\b', lower_msg):
+        elif feel_sad_matched:
             state["topic"] = "user_feeling"
+            metadata["matched_rule"] = "user_feeling"
+            metadata["parsed_entities"] = {
+                "feeling": "sad"
+            }
+            
             if personality == "nova":
-                return "I'm sorry to hear that you're feeling down. Remember that it's okay to feel this way. Is there anything I can do to cheer you up? A joke, perhaps?", state
+                response_text = "I'm sorry to hear that you're feeling down. Remember that it's okay to feel this way. Is there anything I can do to cheer you up? A joke, perhaps?"
             elif personality == "byte":
-                return "Console.log('Warning: User dopamine levels detected low'). Running cheer_up.sh... Let me retrieve a funny joke for you. Type 'joke'!", state
+                response_text = "Console.log('Warning: User dopamine levels detected low'). Running cheer_up.sh... Let me retrieve a funny joke for you. Type 'joke'!"
             elif personality == "spike":
-                return "Aw, sad? Don't worry, life has its downs. But hey, at least you are talking to a highly advanced chatbot. Things could be worse!", state
+                response_text = "Aw, sad? Don't worry, life has its downs. But hey, at least you are talking to a highly advanced chatbot. Things could be worse!"
             else: # zen
-                return "Sadness is like a passing cloud in the wide sky of your mind. It will drift away. Sit quietly, breathe, and let it pass. I am here with you.", state
+                response_text = "Sadness is like a passing cloud in the wide sky of your mind. It will drift away. Sit quietly, breathe, and let it pass. I am here with you."
 
-        if re.search(r'\b(?:i\s+am|i\'m|i\s+feel|feeling)\s+(?:very\s+)?(happy|glad|excited|wonderful|great)\b', lower_msg):
+        elif feel_happy_matched:
             state["topic"] = "user_feeling"
+            metadata["matched_rule"] = "user_feeling"
+            metadata["parsed_entities"] = {
+                "feeling": "happy"
+            }
+            
             if personality == "nova":
-                return "That is wonderful to hear! I'm glad you're having a good day. What's making you feel so happy?", state
+                response_text = "That is wonderful to hear! I'm glad you're having a good day. What's making you feel so happy?"
             elif personality == "byte":
-                return "Optimistic signal received. System throughput elevated! Keep that positive energy compiling.", state
+                response_text = "Optimistic signal received. System throughput elevated! Keep that positive energy compiling."
             elif personality == "spike":
-                return "Nice! Happiness is rare. Guard it with your life before the real world reminds you of your taxes.", state
+                response_text = "Nice! Happiness is rare. Guard it with your life before the real world reminds you of your taxes."
             else: # zen
-                return "Ah, joy is a beautiful blossom. Cherish this present feeling, let it fill your heart and spread peace to others.", state
+                response_text = "Ah, joy is a beautiful blossom. Cherish this present feeling, let it fill your heart and spread peace to others."
 
-        # Rule 12: Name Identification (My name is X / I am X / Call me X)
-        name_match = re.search(r'\b(?:my name is|i am|call me|myself)\s+([a-zA-Z\s]{2,15})', clean_msg, re.IGNORECASE)
-        if name_match:
-            extracted_name = name_match.group(1).strip()
+        elif name_intro_match:
+            extracted_name = name_intro_match.group(1).strip()
             # Clean up words that might be caught
             words_to_exclude = ["a", "the", "an", "just", "actually", "bot", "chatbot", "user", "someone", "nothing", "sad", "happy", "tired", "fine", "good", "bad", "okay", "ok", "sick", "angry", "bored", "excited", "depressed", "unhappy", "down", "hungry", "sleepy", "normal", "great", "wonderful"]
             if extracted_name.lower() not in words_to_exclude:
                 state["name"] = extracted_name
                 state["topic"] = "name_introduction"
+                metadata["matched_rule"] = "name_introduction"
+                metadata["parsed_entities"] = {
+                    "name": extracted_name
+                }
+                
                 if personality == "nova":
-                    return f"It's a pleasure to meet you, {extracted_name}! I will remember your name. What can I do for you today?", state
+                    response_text = f"It's a pleasure to meet you, {extracted_name}! I will remember your name. What can I do for you today?"
                 elif personality == "byte":
-                    return f"Setting variable 'user_name' = '{extracted_name}'. Compile success! Nice to meet you, {extracted_name}.", state
+                    response_text = f"Setting variable 'user_name' = '{extracted_name}'. Compile success! Nice to meet you, {extracted_name}."
                 elif personality == "spike":
-                    return f"Aha, so you are called {extracted_name}. Don't worry, I won't use it against you... yet. What's up?", state
+                    response_text = f"Aha, so you are called {extracted_name}. Don't worry, I won't use it against you... yet. What's up?"
                 else: # zen
-                    return f"Greetings, {extracted_name}. Names are but labels, but it is wonderful to share this moment of connection with you. How can I help you?", state
+                    response_text = f"Greetings, {extracted_name}. Names are but labels, but it is wonderful to share this moment of connection with you. How can I help you?"
+            else:
+                state["topic"] = "unknown"
+                metadata["matched_rule"] = "unknown"
+                response_text = random.choice(self.fallbacks[personality])
 
-        # Fallback responses (No patterns matched)
-        state["topic"] = "unknown"
-        fallback_msg = random.choice(self.fallbacks[personality])
-        return fallback_msg, state
+        else:
+            state["topic"] = "unknown"
+            metadata["matched_rule"] = "unknown"
+            response_text = random.choice(self.fallbacks[personality])
+
+        # Attach metadata to state for client side debug view
+        state["last_match_metadata"] = metadata
+        return response_text, state

@@ -3,114 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot - CodSoft Internship</title>
+    <title>Cognitive Intent Chatbot — Hackathon Dashboard</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <!-- Style -->
     <link rel="stylesheet" href="style.css">
     <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="personality-nova">
+    <div class="glass-bg-glow"></div>
+    
     <div class="app-container">
-        <!-- Sidebar -->
+        <!-- Sidebar (Left Panel: Controls & Cognitive Gauges) -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo-area">
                     <div class="logo-icon">
-                        <i data-lucide="bot"></i>
+                        <i data-lucide="bot-off"></i>
                     </div>
                     <div>
-                        <h2>CodSoft AI</h2>
-                        <span class="subtitle">Task 1: Chatbot</span>
+                        <h2>VisionChat AI</h2>
+                        <span class="subtitle">Cognitive Parser Dashboard</span>
                     </div>
                 </div>
             </div>
             
+            <!-- Personality Selector -->
             <div class="sidebar-section">
-                <h3>Select Bot Personality</h3>
+                <h3>Select Agent Profile</h3>
                 <div class="personalities-list">
-                    <button class="personality-card active" data-personality="nova">
+                    <button class="personality-card active" data-personality="nova" id="card-nova">
                         <div class="p-avatar nova-avatar">N</div>
                         <div class="p-info">
                             <span class="p-name">Nova</span>
-                            <span class="p-desc">Helpful Assistant</span>
+                            <span class="p-desc">Structured Assistant</span>
                         </div>
                     </button>
-                    <button class="personality-card" data-personality="byte">
+                    <button class="personality-card" data-personality="byte" id="card-byte">
                         <div class="p-avatar byte-avatar">B</div>
                         <div class="p-info">
                             <span class="p-name">Byte</span>
-                            <span class="p-desc">Tech Guru</span>
+                            <span class="p-desc">Tech Geek Engine</span>
                         </div>
                     </button>
-                    <button class="personality-card" data-personality="spike">
+                    <button class="personality-card" data-personality="spike" id="card-spike">
                         <div class="p-avatar spike-avatar">S</div>
                         <div class="p-info">
                             <span class="p-name">Spike</span>
                             <span class="p-desc">Sarcastic Buddy</span>
                         </div>
                     </button>
-                    <button class="personality-card" data-personality="zen">
+                    <button class="personality-card" data-personality="zen" id="card-zen">
                         <div class="p-avatar zen-avatar">Z</div>
                         <div class="p-info">
                             <span class="p-name">Zen</span>
-                            <span class="p-desc">Zen Master</span>
+                            <span class="p-desc">Mindful Master</span>
                         </div>
                     </button>
                 </div>
             </div>
 
+            <!-- Cognitive State Memory Gauges -->
+            <div class="sidebar-section state-gauges-section">
+                <h3>Cognitive State Metrics</h3>
+                <div class="gauges-box">
+                    <div class="gauge-card" id="gauge-card-1">
+                        <div class="gauge-header">
+                            <span class="gauge-title" id="gauge-label-1">Assistant Efficiency</span>
+                            <span class="gauge-value" id="gauge-val-1">98%</span>
+                        </div>
+                        <div class="gauge-track">
+                            <div class="gauge-fill" id="gauge-fill-1" style="width: 98%;"></div>
+                        </div>
+                    </div>
+                    <div class="gauge-card" id="gauge-card-2">
+                        <div class="gauge-header">
+                            <span class="gauge-title" id="gauge-label-2">Conversational Focus</span>
+                            <span class="gauge-value" id="gauge-val-2">60%</span>
+                        </div>
+                        <div class="gauge-track">
+                            <div class="gauge-fill" id="gauge-fill-2" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controls / Utilities -->
             <div class="sidebar-section footer-section">
                 <div class="footer-buttons">
                     <button id="clear-chat" class="action-btn-secondary">
-                        <i data-lucide="trash-2"></i> Clear Conversation
+                        <i data-lucide="trash-2"></i> Clear Memory
                     </button>
                     <button id="export-chat" class="action-btn-secondary">
                         <i data-lucide="download"></i> Export History
                     </button>
                 </div>
-                <div class="about-tag">
-                    <p>Designed for CodSoft AI Internship</p>
-                </div>
             </div>
         </aside>
 
-        <!-- Main Chat Area -->
+        <!-- Main Chat Area (Center Panel: Conversation Feed) -->
         <main class="chat-container">
             <!-- Chat Header -->
             <header class="chat-header">
                 <div class="bot-status-container">
-                    <div class="bot-header-avatar" id="header-avatar">N</div>
+                    <div class="bot-header-avatar nova-avatar" id="header-avatar">N</div>
                     <div class="bot-header-info">
                         <h1 id="bot-display-name">Nova</h1>
                         <p id="bot-display-status">Online • Ready to assist</p>
                     </div>
                 </div>
+                
+                <!-- Voice Toggles -->
                 <div class="header-actions">
+                    <button class="voice-toggle-btn active" id="btn-voice-output" title="Toggle Voice Output (TTS)">
+                        <i data-lucide="volume-2" id="voice-output-icon"></i>
+                        <span class="voice-lbl">Speech</span>
+                    </button>
                     <div class="status-indicator"></div>
                 </div>
             </header>
 
-            <!-- Chat Message Area -->
+            <!-- Chat Message Timeline -->
             <section class="chat-messages" id="chat-messages-container">
-                <!-- Welcome Message (Will be replaced/rendered dynamically) -->
+                <!-- Welcome Card -->
                 <div class="welcome-box">
                     <div class="welcome-icon">
                         <i data-lucide="sparkles"></i>
                     </div>
-                    <h2>Welcome to CodSoft Rule-Based Chatbot!</h2>
+                    <h2>VisionChat Intent Parser Dashboard</h2>
                     <p id="personality-welcome-desc">Hello! I am Nova, your structured virtual assistant. You can chat with me, ask me to perform calculations, tell you a joke, give the time, or tell you the weather forecast!</p>
                     
                     <div class="tips-box">
-                        <h4>Try asking:</h4>
+                        <h4>Explore matched rules:</h4>
                         <ul>
                             <li><code class="suggestion-chip">My name is Alex</code></li>
-                            <li><code class="suggestion-chip">Calculate 144 / 12</code></li>
+                            <li><code class="suggestion-chip">Calculate 15 * 6</code></li>
                             <li><code class="suggestion-chip">Tell me a joke</code></li>
-                            <li><code class="suggestion-chip">What time is it?</code></li>
+                            <li><code class="suggestion-chip">What is the weather in Paris?</code></li>
                         </ul>
                     </div>
                 </div>
@@ -118,7 +150,7 @@
 
             <!-- Typing indicator -->
             <div class="typing-indicator-wrapper" id="typing-indicator" style="display: none;">
-                <span class="typing-text" id="typing-text-span">Nova is typing</span>
+                <span class="typing-text" id="typing-text-span">Nova is thinking</span>
                 <div class="typing-dots">
                     <span></span>
                     <span></span>
@@ -126,7 +158,7 @@
                 </div>
             </div>
 
-            <!-- Quick replies & Inputs -->
+            <!-- Input Form & Speech Recog -->
             <footer class="chat-footer">
                 <!-- Quick replies chips container -->
                 <div class="quick-replies" id="quick-replies-container">
@@ -134,11 +166,13 @@
                     <button class="quick-reply-chip" data-text="Tell me a joke">Tell a joke 🎭</button>
                     <button class="quick-reply-chip" data-text="What time is it?">What's the time? ⏰</button>
                     <button class="quick-reply-chip" data-text="Calculate 15 * 8">Calculate 15 * 8 🧮</button>
-                    <button class="quick-reply-chip" data-text="Help">Help & Commands ℹ️</button>
+                    <button class="quick-reply-chip" data-text="Help">Help ℹ️</button>
                 </div>
 
-                <!-- Input area -->
                 <form class="input-form" id="chat-input-form">
+                    <button type="button" class="mic-btn" id="btn-voice-input" title="Voice Search (Speech to Text)">
+                        <i data-lucide="mic" id="mic-icon"></i>
+                    </button>
                     <input type="text" id="user-message-input" placeholder="Message Nova..." autocomplete="off" required>
                     <button type="submit" class="send-btn" id="send-button" title="Send message">
                         <i data-lucide="send"></i>
@@ -146,6 +180,48 @@
                 </form>
             </footer>
         </main>
+
+        <!-- Debug Panel (Right Panel: Live Regex Intent Parser & Pipeline Debugger) -->
+        <aside class="debug-panel" id="debug-panel">
+            <header class="debug-header">
+                <h3>Regex Engine Trace</h3>
+                <span class="debug-status-pill idle" id="debug-status-pill">Idle</span>
+            </header>
+            
+            <div class="debug-content">
+                <!-- Message Inspector -->
+                <div class="debug-section">
+                    <h4>Message Inspector</h4>
+                    <div class="inspector-card">
+                        <div class="inspector-label">Captured Tokens</div>
+                        <div class="inspector-value" id="debug-raw-input">—</div>
+                    </div>
+                </div>
+
+                <!-- Entity Table -->
+                <div class="debug-section">
+                    <h4>Extracted Entities</h4>
+                    <div class="entities-container" id="debug-entities-container">
+                        <div class="empty-debug-text">No variables bound in current scope.</div>
+                    </div>
+                </div>
+
+                <!-- Live Regex Pipeline Match List -->
+                <div class="debug-section match-list-section">
+                    <h4>Intent Parsing Tree</h4>
+                    <div class="regex-steps" id="regex-steps-container">
+                        <!-- Nova Rule Step -->
+                        <div class="regex-step-card">
+                            <span class="step-badge text-secondary">Step 1</span>
+                            <div class="step-meta">
+                                <h5>Evaluate Rule Matchers</h5>
+                                <p>Pattern checking sequence initialized.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </div>
     
     <!-- Toast/Notification -->
