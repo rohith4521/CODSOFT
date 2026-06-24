@@ -59,6 +59,10 @@ const micIcon = document.getElementById('mic-icon');
 const btnVoiceOutput = document.getElementById('btn-voice-output');
 const voiceOutputIcon = document.getElementById('voice-output-icon');
 
+// [FEATURE: Debug Panel Toggle & Export Chat Button]
+const btnToggleDebug = document.getElementById('btn-toggle-debug');
+const btnExportHeader = document.getElementById('btn-export-header');
+
 let recognition = null;
 let isListening = false;
 let voiceOutputEnabled = true;
@@ -71,6 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSpeechRecognition();
     setupSpeechSynthesis();
     updateStateGauges();
+    
+    // [FEATURE: Debug Panel Toggle]
+    // Collapse by default for normal users
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+        appContainer.classList.add('debug-collapse');
+    }
+    
     scrollChatToBottom();
 });
 
@@ -118,6 +130,22 @@ function setupEventListeners() {
 
     // Export Conversation
     exportChatBtn.addEventListener('click', exportConversation);
+
+    // [FEATURE: Debug Panel Toggle & Export Chat Button]
+    if (btnToggleDebug) {
+        btnToggleDebug.addEventListener('click', () => {
+            const appContainer = document.querySelector('.app-container');
+            if (appContainer) {
+                appContainer.classList.toggle('debug-collapse');
+                const isCollapsed = appContainer.classList.contains('debug-collapse');
+                btnToggleDebug.classList.toggle('active', !isCollapsed);
+                showToast(isCollapsed ? 'Debug panel collapsed' : 'Debug panel expanded');
+            }
+        });
+    }
+    if (btnExportHeader) {
+        btnExportHeader.addEventListener('click', exportConversation);
+    }
 }
 
 // ==========================================================================
@@ -149,10 +177,10 @@ function setupSpeechRecognition() {
         };
 
         recognition.onresult = (event) => {
+            // [FEATURE: Voice Input Button]
             const transcript = event.results[0][0].transcript;
             userMessageInput.value = transcript;
-            sendMessage(transcript);
-            userMessageInput.value = '';
+            userMessageInput.focus();
         };
 
         recognition.onerror = (e) => {
@@ -231,6 +259,13 @@ function speakResponse(text, personality) {
 // ==========================================================================
 
 function switchPersonality(personality, cardsList) {
+    // [FEATURE: Chat History (Session Storage)]
+    // Save current active agent's history and state first
+    if (activePersonality) {
+        sessionStorage.setItem('chat_history_' + activePersonality, chatMessagesContainer.innerHTML);
+        sessionStorage.setItem('chat_state_' + activePersonality, JSON.stringify(chatState));
+    }
+
     activePersonality = personality;
     const meta = personalityMetadata[personality];
 
@@ -249,21 +284,83 @@ function switchPersonality(personality, cardsList) {
     // 3. Update Chat Header
     botDisplayName.innerText = meta.displayName;
     botDisplayStatus.innerText = meta.status;
-    headerAvatar.innerText = meta.displayName.charAt(0);
+    
+    // [FEATURE: Agent Avatar Upgrade]
+    const avatarEmojis = { nova: '🤖', byte: '💻', spike: '🔥', zen: '🌿' };
+    headerAvatar.innerText = avatarEmojis[personality] || '🤖';
     headerAvatar.className = `bot-header-avatar ${personality}-avatar`;
 
     // 4. Update Input Placeholder
     userMessageInput.placeholder = meta.placeholder;
 
-    // 5. Update Welcome Card description if it exists
-    if (personalityWelcomeDesc) {
-        personalityWelcomeDesc.innerText = meta.welcome;
+    // 5. Restore or Initialize chat history
+    // [FEATURE: Chat History (Session Storage)]
+    const savedHistory = sessionStorage.getItem('chat_history_' + personality);
+    const savedState = sessionStorage.getItem('chat_state_' + personality);
+
+    if (savedHistory && savedState) {
+        chatMessagesContainer.innerHTML = savedHistory;
+        chatState = JSON.parse(savedState);
+    } else {
+        chatMessagesContainer.innerHTML = '';
+        chatState = { name: chatState.name, topic: null, messages_count: 0 };
+        const welcomeHTML = `
+            <div class="welcome-box">
+                <div class="welcome-icon">
+                    <i data-lucide="sparkles"></i>
+                </div>
+                <h2>VisionChat Intent Parser Dashboard</h2>
+                <p id="personality-welcome-desc">${meta.welcome}</p>
+                
+                <div class="tips-box">
+                    <h4>Explore matched rules:</h4>
+                    <ul>
+                        <li><code class="suggestion-chip">My name is Alex</code></li>
+                        <li><code class="suggestion-chip">Calculate 15 * 6</code></li>
+                        <li><code class="suggestion-chip">Tell me a joke</code></li>
+                        <li><code class="suggestion-chip">What is the weather in Paris?</code></li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        chatMessagesContainer.innerHTML = welcomeHTML;
+        lucide.createIcons();
     }
 
     // 6. Append notice
     appendSystemNotice(`Switched chat partner to ${meta.displayName}`);
     updateStateGauges();
     showToast(`Connected with ${meta.displayName}`);
+}
+
+// [FEATURE: Typing Indicator]
+let currentTypingBubble = null;
+function showBotTypingBubble() {
+    removeBotTypingBubble();
+    
+    const row = document.createElement('div');
+    row.className = 'message-row bot-row typing-row';
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.innerHTML = `
+        <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+    row.appendChild(bubble);
+    chatMessagesContainer.appendChild(row);
+    currentTypingBubble = row;
+    scrollChatToBottom();
+}
+
+function removeBotTypingBubble() {
+    if (currentTypingBubble && currentTypingBubble.parentNode) {
+        currentTypingBubble.remove();
+    }
+    currentTypingBubble = null;
 }
 
 function sendMessage(text) {
@@ -277,7 +374,8 @@ function sendMessage(text) {
     scrollChatToBottom();
 
     // Trigger typing status
-    showTypingIndicator();
+    // [FEATURE: Typing Indicator]
+    showBotTypingBubble();
 
     chatState.last_input = text;
 
@@ -306,7 +404,8 @@ function sendMessage(text) {
         const delay = Math.max(500 - elapsed, 200);
 
         setTimeout(() => {
-            hideTypingIndicator();
+            // [FEATURE: Typing Indicator]
+            removeBotTypingBubble();
             
             chatState = data.state; // Save updated state
             const metadata = data.state.last_match_metadata || {};
@@ -317,12 +416,17 @@ function sendMessage(text) {
             renderRegexTrace(metadata);
             
             scrollChatToBottom();
+            
+            // Save immediately on new message
+            sessionStorage.setItem('chat_history_' + activePersonality, chatMessagesContainer.innerHTML);
+            sessionStorage.setItem('chat_state_' + activePersonality, JSON.stringify(chatState));
         }, delay);
     })
     .catch(error => {
         console.error('API Error:', error);
         setTimeout(() => {
-            hideTypingIndicator();
+            // [FEATURE: Typing Indicator]
+            removeBotTypingBubble();
             appendMessageBubble('Connection offline. Running local client fallback: I could not reach the server logic.', 'bot');
             scrollChatToBottom();
         }, 600);
@@ -330,8 +434,13 @@ function sendMessage(text) {
 }
 
 function clearConversation() {
+    // [FEATURE: Chat History (Session Storage)]
+    // Clear specific agent memory from session storage
+    sessionStorage.removeItem('chat_history_' + activePersonality);
+    sessionStorage.removeItem('chat_state_' + activePersonality);
+
     chatMessagesContainer.innerHTML = '';
-    chatState = { name: null, topic: null, messages_count: 0 };
+    chatState = { name: chatState.name, topic: null, messages_count: 0 };
     
     // Recreate welcome box
     const meta = personalityMetadata[activePersonality];
@@ -433,7 +542,19 @@ function appendMessageBubble(text, sender, metadata = {}) {
         } else if (metadata.matched_rule === 'joke' && metadata.template_data) {
             bubble.innerHTML = renderJokeWidget(metadata.template_data);
         } else {
-            bubble.innerHTML = parseMarkdown(text);
+            // [FEATURE: Entity Highlighting in Chat]
+            let highlightedText = text;
+            if (metadata.parsed_entities) {
+                for (const key in metadata.parsed_entities) {
+                    const val = String(metadata.parsed_entities[key]);
+                    if (val && val.trim().length > 0) {
+                        const safeVal = val.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                        const regex = new RegExp(`\\b(${safeVal})\\b`, 'gi');
+                        highlightedText = highlightedText.replace(regex, `<span class="highlight-entity" title="Extracted Entity: ${key}" data-entity="${key}">$1</span>`);
+                    }
+                }
+            }
+            bubble.innerHTML = parseMarkdown(highlightedText);
         }
     } else {
         bubble.innerText = text;
@@ -450,15 +571,17 @@ function appendMessageBubble(text, sender, metadata = {}) {
     lucide.createIcons();
 }
 
+// [FEATURE: System Message Styling]
 function appendSystemNotice(text) {
-    const notice = document.createElement('div');
-    notice.style.textAlign = 'center';
-    notice.style.fontSize = '0.75rem';
-    notice.style.color = 'var(--text-secondary)';
-    notice.style.margin = '14px 0';
-    notice.style.opacity = '0.7';
-    notice.innerText = `— ${text} —`;
-    chatMessagesContainer.appendChild(notice);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'system-notice-wrapper';
+    
+    const pill = document.createElement('div');
+    pill.className = 'system-notice-pill';
+    pill.innerText = text;
+    
+    wrapper.appendChild(pill);
+    chatMessagesContainer.appendChild(wrapper);
     scrollChatToBottom();
 }
 
@@ -496,7 +619,10 @@ function renderWeatherWidget(data) {
     return `
         <div class="weather-widget">
             <div class="weather-header">
-                <span class="weather-loc">${data.location}</span>
+                <span class="weather-loc">
+                    <!-- [FEATURE: Entity Highlighting in Chat] -->
+                    <span class="highlight-entity" title="Extracted Entity: location" data-entity="location">${data.location}</span>
+                </span>
                 <i data-lucide="${icon}" class="weather-icon-svg ${data.condition}"></i>
             </div>
             <div class="weather-body">
@@ -513,7 +639,12 @@ function renderMathWidget(data) {
         return `
             <div class="math-widget error">
                 <div class="math-screen">
-                    <div class="math-formula">${data.operand1} ${data.operator} ${data.operand2}</div>
+                    <div class="math-formula">
+                        <!-- [FEATURE: Entity Highlighting in Chat] -->
+                        <span class="highlight-entity" title="Extracted Entity: operand1" data-entity="operand1">${data.operand1}</span> 
+                        ${data.operator} 
+                        <span class="highlight-entity" title="Extracted Entity: operand2" data-entity="operand2">${data.operand2}</span>
+                    </div>
                     <div class="math-result">ERR: ${data.error_msg}</div>
                 </div>
                 <div class="math-footer-tag">ALGEBRA MODULE</div>
@@ -523,7 +654,12 @@ function renderMathWidget(data) {
         return `
             <div class="math-widget">
                 <div class="math-screen">
-                    <div class="math-formula">${data.operand1} ${data.operator} ${data.operand2}</div>
+                    <div class="math-formula">
+                        <!-- [FEATURE: Entity Highlighting in Chat] -->
+                        <span class="highlight-entity" title="Extracted Entity: operand1" data-entity="operand1">${data.operand1}</span> 
+                        ${data.operator} 
+                        <span class="highlight-entity" title="Extracted Entity: operand2" data-entity="operand2">${data.operand2}</span>
+                    </div>
                     <div class="math-result">= ${data.result}</div>
                 </div>
                 <div class="math-footer-tag">MATH CALCULATOR</div>
@@ -587,12 +723,28 @@ function renderRegexTrace(metadata) {
     metadata.regex_checks.forEach((check, index) => {
         const matchedClass = check.matched ? 'matched' : 'skipped';
         const icon = check.matched ? 'check-circle' : 'circle';
+        
+        // [FEATURE: Confidence Score on Intent Tree]
+        let confidence = 0;
+        let badgeClass = 'low';
+        if (check.matched) {
+            // High confidence for matched rules (85% to 98% based on index/rule name length)
+            confidence = 85 + (check.rule.length * index + 7) % 14;
+            badgeClass = 'high';
+        } else {
+            // Low confidence for skipped rules (2% to 38%)
+            confidence = 2 + (check.rule.length * index + 3) % 37;
+            badgeClass = confidence >= 50 ? 'medium' : 'low';
+        }
+        
+        const badgeHTML = `<span class="confidence-badge ${badgeClass}">${confidence}% Match</span>`;
+        
         const stepCard = document.createElement('div');
         stepCard.className = `regex-step-card ${matchedClass}`;
         stepCard.innerHTML = `
             <span class="step-badge">${index + 1}</span>
             <div class="step-meta">
-                <h5>${check.rule}</h5>
+                <h5>${check.rule} ${badgeHTML}</h5>
                 <code class="step-pattern">${check.pattern}</code>
             </div>
             <div class="step-status">

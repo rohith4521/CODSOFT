@@ -36,28 +36,28 @@
                 <h3>Select Agent Profile</h3>
                 <div class="personalities-list">
                     <button class="personality-card active" data-personality="nova" id="card-nova">
-                        <div class="p-avatar nova-avatar">N</div>
+                        <div class="p-avatar nova-avatar">🤖</div>
                         <div class="p-info">
                             <span class="p-name">Nova</span>
                             <span class="p-desc">Structured Assistant</span>
                         </div>
                     </button>
                     <button class="personality-card" data-personality="byte" id="card-byte">
-                        <div class="p-avatar byte-avatar">B</div>
+                        <div class="p-avatar byte-avatar">💻</div>
                         <div class="p-info">
                             <span class="p-name">Byte</span>
                             <span class="p-desc">Tech Geek Engine</span>
                         </div>
                     </button>
                     <button class="personality-card" data-personality="spike" id="card-spike">
-                        <div class="p-avatar spike-avatar">S</div>
+                        <div class="p-avatar spike-avatar">🔥</div>
                         <div class="p-info">
                             <span class="p-name">Spike</span>
                             <span class="p-desc">Sarcastic Buddy</span>
                         </div>
                     </button>
                     <button class="personality-card" data-personality="zen" id="card-zen">
-                        <div class="p-avatar zen-avatar">Z</div>
+                        <div class="p-avatar zen-avatar">🌿</div>
                         <div class="p-info">
                             <span class="p-name">Zen</span>
                             <span class="p-desc">Mindful Master</span>
@@ -109,18 +109,25 @@
             <!-- Chat Header -->
             <header class="chat-header">
                 <div class="bot-status-container">
-                    <div class="bot-header-avatar nova-avatar" id="header-avatar">N</div>
+                    <div class="bot-header-avatar nova-avatar" id="header-avatar">🤖</div>
                     <div class="bot-header-info">
                         <h1 id="bot-display-name">Nova</h1>
                         <p id="bot-display-status">Online • Ready to assist</p>
                     </div>
                 </div>
                 
-                <!-- Voice Toggles -->
+                <!-- Voice Toggles & Control Actions -->
+                <!-- [FEATURE: Debug Panel Toggle & Export Chat Button] -->
                 <div class="header-actions">
                     <button class="voice-toggle-btn active" id="btn-voice-output" title="Toggle Voice Output (TTS)">
                         <i data-lucide="volume-2" id="voice-output-icon"></i>
                         <span class="voice-lbl">Speech</span>
+                    </button>
+                    <button class="header-action-btn" id="btn-export-header" title="Export Conversation History">
+                        <i data-lucide="download"></i>
+                    </button>
+                    <button class="header-action-btn" id="btn-toggle-debug" title="Toggle Debug Panel">
+                        <i data-lucide="code"></i>
                     </button>
                     <div class="status-indicator"></div>
                 </div>
@@ -170,10 +177,11 @@
                 </div>
 
                 <form class="input-form" id="chat-input-form">
-                    <button type="button" class="mic-btn" id="btn-voice-input" title="Voice Search (Speech to Text)">
+                    <input type="text" id="user-message-input" placeholder="Message Nova..." autocomplete="off" required>
+                    <!-- [FEATURE: Voice Input Button] -->
+                    <button type="button" class="mic-btn" id="btn-voice-input" title="Voice Input (Speech to Text)">
                         <i data-lucide="mic" id="mic-icon"></i>
                     </button>
-                    <input type="text" id="user-message-input" placeholder="Message Nova..." autocomplete="off" required>
                     <button type="submit" class="send-btn" id="send-button" title="Send message">
                         <i data-lucide="send"></i>
                     </button>

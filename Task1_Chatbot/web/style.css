@@ -614,12 +614,14 @@ h1, h2, h3, h4 {
     font-size: 0.85rem;
 }
 
+/* [FEATURE: Timestamps on Hover] */
 .message-time {
     font-size: 0.68rem;
     color: var(--text-secondary);
-    opacity: 0.6;
+    opacity: 0;
     margin-top: 4px;
     display: block;
+    transition: opacity 0.2s ease-in-out;
 }
 
 .user-row .message-time {
@@ -630,6 +632,11 @@ h1, h2, h3, h4 {
 .bot-row .message-time {
     text-align: left;
     margin-left: 6px;
+}
+
+.message-row:hover + .message-time,
+.message-time:hover {
+    opacity: 0.6;
 }
 
 /* Animations */
@@ -1306,3 +1313,130 @@ h1, h2, h3, h4 {
         display: none;
     }
 }
+
+/* ==========================================================================
+   NEW ENHANCEMENTS FOR HACKATHON SHOWCASE
+   ========================================================================== */
+
+/* [FEATURE: Debug Panel Toggle] */
+.app-container {
+    transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.app-container.debug-collapse {
+    grid-template-columns: 300px 1fr 0px;
+}
+.app-container.debug-collapse .debug-panel {
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    border-left-width: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+.debug-panel {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, border-left-width 0.3s ease;
+}
+
+/* [FEATURE: Header Action Buttons] */
+.header-action-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-right: 10px;
+}
+.header-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+    transform: scale(1.05);
+}
+.header-action-btn:active {
+    transform: scale(0.95);
+}
+.header-action-btn i {
+    width: 16px;
+    height: 16px;
+}
+
+/* [FEATURE: Confidence Score badges] */
+.confidence-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    margin-left: 8px;
+    display: inline-block;
+    font-family: var(--font-heading);
+}
+.confidence-badge.high {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.confidence-badge.medium {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.confidence-badge.low {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* [FEATURE: Entity Highlighting] */
+.highlight-entity {
+    background: rgba(59, 130, 246, 0.15);
+    border-bottom: 2px dashed var(--accent-color);
+    padding: 0 4px;
+    border-radius: 2px;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    display: inline-block;
+    cursor: help;
+}
+body.personality-byte .highlight-entity {
+    background: rgba(168, 85, 247, 0.15);
+    border-bottom-color: var(--accent-color);
+}
+body.personality-spike .highlight-entity {
+    background: rgba(249, 115, 22, 0.15);
+    border-bottom-color: var(--accent-color);
+}
+body.personality-zen .highlight-entity {
+    background: rgba(16, 185, 129, 0.15);
+    border-bottom-color: var(--accent-color);
+}
+
+/* [FEATURE: System Message Styling] */
+.system-notice-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 14px 0;
+}
+.system-notice-pill {
+    padding: 6px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: inline-block;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: fadeInDown 0.3s ease;
+}
+
