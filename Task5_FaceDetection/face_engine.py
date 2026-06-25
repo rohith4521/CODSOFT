@@ -23,6 +23,11 @@ class FaceEngine:
     def _preprocess_face(self, face_img):
         """Resizes, equalizes histogram, subtracts mean, and normalizes vector."""
         resized = cv2.resize(face_img, (100, 100))
+        
+        # Inner 80% crop to ignore hair, ears, beard contours, and background
+        inner = resized[10:90, 10:90]
+        resized = cv2.resize(inner, (100, 100))
+        
         equalized = cv2.equalizeHist(resized)
         vector = equalized.flatten().astype(np.float32)
         
@@ -168,8 +173,9 @@ class FaceEngine:
                     best_score = confidence
                     best_name = name
 
-        # Decision threshold (70% confidence mapping, equivalent to 0.40 correlation)
-        if best_score > 0.70:
+        # Tightened decision threshold (82% confidence mapping, equivalent to 0.64 correlation)
+        # to prevent similar family members or siblings from false-matching.
+        if best_score > 0.82:
             return best_name, float(best_score)
         
         return "Unknown", float(best_score)
