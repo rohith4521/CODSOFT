@@ -60,11 +60,11 @@ class FaceEngine:
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
-        # Detect faces
+        # Detect faces with parameters optimized for better recall
         faces = self.face_cascade.detectMultiScale(
             gray,
-            scaleFactor=1.1,
-            minNeighbors=5,
+            scaleFactor=1.05,
+            minNeighbors=4,
             minSize=(30, 30)
         )
 
@@ -141,22 +141,32 @@ class FaceEngine:
         if not self.registered_faces:
             return "Unknown", 0.0
 
-        # Preprocess input face
-        input_vector = self._preprocess_face(face_img)
-
+        # Search over a grid of small shifts (dx, dy) to compensate for Haar Cascade
+        # bounding box alignment jitter and recover optimal correlation.
         best_score = -1.0
         best_name = "Unknown"
+        
+        h, w = face_img.shape[:2]
+        shifted_vectors = []
+        for dy in [-8, -4, 0, 4, 8]:
+            for dx in [-8, -4, 0, 4, 8]:
+                if dx == 0 and dy == 0:
+                    realigned = face_img
+                else:
+                    M = np.float32([[1, 0, -dx], [0, 1, -dy]])
+                    realigned = cv2.warpAffine(face_img, M, (w, h), borderMode=cv2.BORDER_REPLICATE)
+                
+                v_realigned = self._preprocess_face(realigned)
+                shifted_vectors.append(v_realigned)
 
         for name, reg_vector in self.registered_faces.items():
-            # Calculate cosine similarity (dot product of normalized vectors)
-            similarity = np.dot(input_vector, reg_vector)
-            
-            # Map cosine similarity [-1, 1] to a confidence value [0, 1]
-            confidence = (similarity + 1.0) / 2.0
-            
-            if confidence > best_score:
-                best_score = confidence
-                best_name = name
+            for v_input in shifted_vectors:
+                similarity = np.dot(v_input, reg_vector)
+                confidence = (similarity + 1.0) / 2.0
+                
+                if confidence > best_score:
+                    best_score = confidence
+                    best_name = name
 
         # Decision threshold (70% confidence mapping, equivalent to 0.40 correlation)
         if best_score > 0.70:

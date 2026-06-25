@@ -234,6 +234,8 @@ function renderDetectedFaces(faces) {
 imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+        // Clear previous results and set waiting state
+        detectedFacesList.innerHTML = '<p class="placeholder-text">Waiting for analysis...</p>';
         const reader = new FileReader();
         reader.onload = (event) => {
             currentFrameBase64 = event.target.result;
