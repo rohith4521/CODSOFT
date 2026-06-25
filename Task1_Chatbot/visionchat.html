@@ -41,21 +41,23 @@
       padding: 0;
     }
 
-    body {
+    html, body {
       background-color: var(--bg-primary);
       color: var(--text-primary);
       font-family: var(--font);
       overflow: hidden;
       height: 100vh;
       width: 100vw;
+      margin: 0;
+      padding: 0;
     }
 
     /* Layout Grid */
     .app-layout {
       display: grid;
       grid-template-columns: 270px 1fr;
-      height: 100vh;
-      width: 100vw;
+      height: 100%;
+      width: 100%;
       overflow: hidden;
       position: relative;
     }
@@ -109,6 +111,8 @@
       font-size: 11px;
       color: var(--text-secondary);
       font-weight: 500;
+      cursor: pointer;
+      text-decoration: underline dotted;
     }
 
     .sidebar-scrollable {
@@ -361,6 +365,8 @@
     .header-status {
       font-size: 12px;
       color: var(--text-secondary);
+      cursor: pointer;
+      text-decoration: underline dotted;
     }
 
     .header-right {
@@ -846,6 +852,39 @@
     // Hardcoded Groq Key API Reference
     const GROQ_API_KEY = "PASTE_YOUR_GROQ_KEY_HERE";
 
+    // Retrieve or prompt for API Key dynamically
+    function getApiKey() {
+      let key = localStorage.getItem("groq_api_key");
+      if (!key || key === "PASTE_YOUR_GROQ_KEY_HERE") {
+        key = GROQ_API_KEY;
+      }
+      if (!key || key === "PASTE_YOUR_GROQ_KEY_HERE") {
+        const userKey = prompt("⚠️ Groq API Key is required!\nPlease enter your Groq API Key:");
+        if (userKey) {
+          key = userKey.trim();
+          localStorage.setItem("groq_api_key", key);
+        }
+      }
+      return key;
+    }
+
+    // Manual API key change trigger
+    function changeApiKey() {
+      const currentKey = localStorage.getItem("groq_api_key") || GROQ_API_KEY;
+      const placeholderKey = currentKey === "PASTE_YOUR_GROQ_KEY_HERE" ? "" : currentKey;
+      const userKey = prompt("Configure Groq API Key:", placeholderKey);
+      if (userKey !== null) {
+        const trimmed = userKey.trim();
+        if (trimmed) {
+          localStorage.setItem("groq_api_key", trimmed);
+          alert("Groq API Key updated successfully!");
+        } else {
+          localStorage.removeItem("groq_api_key");
+          alert("Groq API Key reset to default placeholder.");
+        }
+      }
+    }
+
     // Static Agent Specifications
     const AGENTS = {
       nova: {
@@ -1238,6 +1277,11 @@
         disableSendButton();
         showTypingIndicator();
 
+        const activeKey = getApiKey();
+        if (!activeKey || activeKey === "PASTE_YOUR_GROQ_KEY_HERE") {
+          throw new Error("Invalid API key. Please click send again to prompt for a key.");
+        }
+
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 30000);
 
@@ -1248,7 +1292,7 @@
             signal: controller.signal,
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${GROQ_API_KEY}`
+              "Authorization": `Bearer ${activeKey}`
             },
             body: JSON.stringify({
               model: "llama3-70b-8192",
@@ -1275,8 +1319,9 @@
           } catch (e) {
             msg = `HTTP Error ${response.status}: ${response.statusText}`;
           }
-          if (msg.includes("invalid_api_key") || msg.toLowerCase().includes("api key")) {
-            throw new Error("Invalid API key. Open visionchat.html and fix GROQ_API_KEY at top of file.");
+          if (msg.includes("invalid_api_key") || msg.toLowerCase().includes("api key") || response.status === 401) {
+            localStorage.removeItem("groq_api_key");
+            throw new Error("Invalid API key. Please click send again to prompt for a new key.");
           }
           if (response.status === 429) {
             throw new Error("Too many requests. Wait 10 seconds.");
@@ -1498,6 +1543,16 @@
       document.getElementById('btn-clear').addEventListener('click', clearConversation);
       document.getElementById('btn-export').addEventListener('click', exportChat);
       document.getElementById('btn-mute').addEventListener('click', toggleMute);
+
+      // Setup API Key click triggers
+      const logoSub = document.querySelector('.logo-sub');
+      if (logoSub) {
+        logoSub.addEventListener('click', changeApiKey);
+      }
+      const headerStatus = document.querySelector('.header-status');
+      if (headerStatus) {
+        headerStatus.addEventListener('click', changeApiKey);
+      }
     });
   </script>
 </body>
