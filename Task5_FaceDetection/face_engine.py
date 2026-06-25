@@ -158,8 +158,8 @@ class FaceEngine:
                 best_score = confidence
                 best_name = name
 
-        # Decision threshold (80% confidence mapping, equivalent to 0.60 correlation)
-        if best_score > 0.80:
+        # Decision threshold (70% confidence mapping, equivalent to 0.40 correlation)
+        if best_score > 0.70:
             return best_name, float(best_score)
         
         return "Unknown", float(best_score)
