@@ -778,7 +778,21 @@ body {
         }
     }
 
+    function getGroqKey() {
+        let key = sessionStorage.getItem('groq_api_key');
+        if (!key) {
+            key = prompt('Enter your Groq API key (get one free at console.groq.com):');
+            if (key && key.trim()) {
+                sessionStorage.setItem('groq_api_key', key.trim());
+            }
+        }
+        return key ? key.trim() : null;
+    }
+
     async function callAI(userMessage) {
+        const apiKey = getGroqKey();
+        if (!apiKey) throw new Error('No API key provided. Refresh and try again.');
+
         const agent = AGENT_META[activeAgent];
         const history = agentHistories[activeAgent];
 
@@ -797,7 +811,7 @@ body {
                 signal: controller.signal,
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer PASTE_YOUR_GROQ_KEY_HERE"
+                    "Authorization": "Bearer " + apiKey
                 },
                 body: JSON.stringify({
                     model: "llama3-70b-8192",
