@@ -8,8 +8,8 @@ from face_engine import FaceEngine
 
 class TestFaceEngine(unittest.TestCase):
     def setUp(self):
-        # Create a mock face image: 100x100 solid gray square
-        self.mock_face_img = np.ones((100, 100), dtype=np.uint8) * 128
+        # Create a mock face image with some texture/variance
+        self.mock_face_img = np.arange(10000, dtype=np.uint8).reshape((100, 100))
         _, buffer = cv2.imencode('.png', self.mock_face_img)
         self.mock_face_b64 = "data:image/png;base64," + base64.b64encode(buffer).decode('utf-8')
         
