@@ -20,6 +20,22 @@ class FaceEngine:
         os.makedirs(self.db_dir, exist_ok=True)
         self._load_persisted_faces()
 
+    def _preprocess_face(self, face_img):
+        """Resizes, equalizes histogram, subtracts mean, and normalizes vector."""
+        resized = cv2.resize(face_img, (100, 100))
+        equalized = cv2.equalizeHist(resized)
+        vector = equalized.flatten().astype(np.float32)
+        
+        # Center the vector (Pearson Correlation centering)
+        mean = np.mean(vector)
+        vector = vector - mean
+        
+        # L2 Normalize
+        norm = np.linalg.norm(vector)
+        if norm > 0:
+            vector = vector / norm
+        return vector
+
     def _load_persisted_faces(self):
         """Loads registered faces from the local faces_db folder."""
         for filename in os.listdir(self.db_dir):
@@ -28,10 +44,7 @@ class FaceEngine:
                 filepath = os.path.join(self.db_dir, filename)
                 img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
                 if img is not None:
-                    resized = cv2.resize(img, (100, 100))
-                    # Normalize vector
-                    vector = resized.flatten().astype(np.float32) / 255.0
-                    self.registered_faces[name] = vector
+                    self.registered_faces[name] = self._preprocess_face(img)
 
     def detect_faces(self, image_bytes):
         """
@@ -117,8 +130,7 @@ class FaceEngine:
         cv2.imwrite(filepath, resized)
 
         # Update runtime database
-        vector = resized.flatten().astype(np.float32) / 255.0
-        self.registered_faces[name] = vector
+        self.registered_faces[name] = self._preprocess_face(resized)
         return True
 
     def _recognize_face_vector(self, face_img):
@@ -130,25 +142,12 @@ class FaceEngine:
             return "Unknown", 0.0
 
         # Preprocess input face
-        resized = cv2.resize(face_img, (100, 100))
-        input_vector = resized.flatten().astype(np.float32) / 255.0
-
-        # L2 normalize input
-        norm_input = np.linalg.norm(input_vector)
-        if norm_input == 0:
-            return "Unknown", 0.0
-        input_vector = input_vector / norm_input
+        input_vector = self._preprocess_face(face_img)
 
         best_score = -1.0
         best_name = "Unknown"
 
-        for name, registered_vector in self.registered_faces.items():
-            # L2 normalize registered vector
-            norm_reg = np.linalg.norm(registered_vector)
-            if norm_reg == 0:
-                continue
-            reg_vector = registered_vector / norm_reg
-
+        for name, reg_vector in self.registered_faces.items():
             # Calculate cosine similarity (dot product of normalized vectors)
             similarity = np.dot(input_vector, reg_vector)
             
@@ -159,8 +158,8 @@ class FaceEngine:
                 best_score = confidence
                 best_name = name
 
-        # Decision threshold (e.g. 80% confidence mapping)
-        if best_score > 0.85:
+        # Decision threshold (80% confidence mapping, equivalent to 0.60 correlation)
+        if best_score > 0.80:
             return best_name, float(best_score)
         
         return "Unknown", float(best_score)
